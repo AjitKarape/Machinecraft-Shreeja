@@ -29,7 +29,7 @@ export default function Dashboard() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [stepCounts, setStepCounts] = useState<Record<string, StepCount>>({});
   const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [filterPriority, setFilterPriority] = useState<string>('all');
+  
   const [taskFormOpen, setTaskFormOpen] = useState(false);
   const [taskDetailOpen, setTaskDetailOpen] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -96,9 +96,12 @@ export default function Dashboard() {
 
   const filteredTasks = tasks.filter(task => {
     if (filterStatus !== 'all' && task.status !== filterStatus) return false;
-    if (filterPriority !== 'all' && task.priority !== filterPriority) return false;
     return true;
   });
+
+  const highPriorityTasks = filteredTasks.filter(task => task.priority === 'high');
+  const mediumPriorityTasks = filteredTasks.filter(task => task.priority === 'medium');
+  const lowPriorityTasks = filteredTasks.filter(task => task.priority === 'low');
 
   const getProgress = (taskId: string): number => {
     const count = stepCounts[taskId];
@@ -132,48 +135,97 @@ export default function Dashboard() {
                 <SelectItem value="completed">Completed</SelectItem>
               </SelectContent>
             </Select>
-
-            <Select value={filterPriority} onValueChange={setFilterPriority}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by priority" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Priority</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredTasks.map((task) => {
-            const count = stepCounts[task.id] || { total_steps: 0, completed_steps: 0 };
-            return (
-              <TaskCard
-                key={task.id}
-                task={task}
-                progress={getProgress(task.id)}
-                totalSteps={count.total_steps}
-                completedSteps={count.completed_steps}
-                onClick={() => {
-                  setSelectedTaskId(task.id);
-                  setTaskDetailOpen(true);
-                }}
-              />
-            );
-          })}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* High Priority Column */}
+          <div className="space-y-3">
+            <h2 className="text-lg font-semibold text-destructive">High Priority</h2>
+            <div className="space-y-4">
+              {highPriorityTasks.map((task) => {
+                const count = stepCounts[task.id] || { total_steps: 0, completed_steps: 0 };
+                return (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    progress={getProgress(task.id)}
+                    totalSteps={count.total_steps}
+                    completedSteps={count.completed_steps}
+                    onClick={() => {
+                      setSelectedTaskId(task.id);
+                      setTaskDetailOpen(true);
+                    }}
+                  />
+                );
+              })}
+              {highPriorityTasks.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-8">No high priority tasks</p>
+              )}
+            </div>
+          </div>
+
+          {/* Medium Priority Column */}
+          <div className="space-y-3">
+            <h2 className="text-lg font-semibold text-warning">Medium Priority</h2>
+            <div className="space-y-4">
+              {mediumPriorityTasks.map((task) => {
+                const count = stepCounts[task.id] || { total_steps: 0, completed_steps: 0 };
+                return (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    progress={getProgress(task.id)}
+                    totalSteps={count.total_steps}
+                    completedSteps={count.completed_steps}
+                    onClick={() => {
+                      setSelectedTaskId(task.id);
+                      setTaskDetailOpen(true);
+                    }}
+                  />
+                );
+              })}
+              {mediumPriorityTasks.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-8">No medium priority tasks</p>
+              )}
+            </div>
+          </div>
+
+          {/* Low Priority Column */}
+          <div className="space-y-3">
+            <h2 className="text-lg font-semibold text-muted-foreground">Low Priority</h2>
+            <div className="space-y-4">
+              {lowPriorityTasks.map((task) => {
+                const count = stepCounts[task.id] || { total_steps: 0, completed_steps: 0 };
+                return (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    progress={getProgress(task.id)}
+                    totalSteps={count.total_steps}
+                    completedSteps={count.completed_steps}
+                    onClick={() => {
+                      setSelectedTaskId(task.id);
+                      setTaskDetailOpen(true);
+                    }}
+                  />
+                );
+              })}
+              {lowPriorityTasks.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-8">No low priority tasks</p>
+              )}
+            </div>
+          </div>
         </div>
 
         {filteredTasks.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground mb-4">
-              {filterStatus !== 'all' || filterPriority !== 'all'
+              {filterStatus !== 'all'
                 ? 'No tasks match the current filters'
                 : 'No tasks yet. Create your first task to get started!'}
             </p>
-            {filterStatus === 'all' && filterPriority === 'all' && (
+            {filterStatus === 'all' && (
               <Button onClick={() => setTaskFormOpen(true)}>
                 <Plus className="w-4 h-4 mr-2" />
                 Create Task
