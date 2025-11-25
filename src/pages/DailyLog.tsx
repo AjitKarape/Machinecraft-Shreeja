@@ -156,11 +156,6 @@ export default function DailyLog() {
     setIsViewDialogOpen(true);
   };
   const handleEditNote = (note: DailyNote) => {
-    // Prevent editing of historical logs
-    if (note.is_historical) {
-      toast.error("Cannot edit historical production logs");
-      return;
-    }
     setSelectedNote(note);
     setSelectedDate(new Date(note.date));
     setEmployeeName(note.worker_name);
@@ -244,9 +239,9 @@ export default function DailyLog() {
   return <div className="min-h-screen bg-background">
       <NavHeader />
       
-      <main className="max-w-screen-2xl mx-auto px-4 py-4">
-        <div className="mb-4">
-          <div className="flex justify-between items-start mb-4">
+      <main className="max-w-screen-2xl mx-auto px-3 py-3">
+        <div className="mb-3">
+          <div className="flex justify-between items-start mb-3">
             <div>
               <h1 className="text-foreground mb-1 text-xl font-medium">Daily Log</h1>
             </div>
@@ -322,7 +317,7 @@ export default function DailyLog() {
             </Dialog>
           </div>
 
-          <div className="flex gap-3 mb-4">
+          <div className="flex gap-3 mb-3">
             <Select value={filterMonth} onValueChange={setFilterMonth}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Filter by month" />
@@ -354,9 +349,9 @@ export default function DailyLog() {
             <table className="w-full">
               <thead className="border-b bg-muted/50">
                 <tr>
-                  <th className="text-left p-3 text-sm font-medium text-foreground">Date</th>
-                  <th className="text-left p-3 text-sm font-medium text-foreground">Day</th>
-                  <th className="text-left p-3 text-sm font-medium text-foreground">Employee
+                  <th className="text-left p-2 text-sm font-medium text-foreground">Date</th>
+                  <th className="text-left p-2 text-sm font-medium text-foreground">Day</th>
+                  <th className="text-left p-2 text-sm font-medium text-foreground">Employee
 
 
 
@@ -366,23 +361,23 @@ export default function DailyLog() {
 
 
                 </th>
-                  <th className="text-left p-3 text-sm font-medium text-foreground">Notes / Status</th>
-                  <th className="text-center p-3 text-sm font-medium text-foreground">Actions</th>
+                  <th className="text-left p-2 text-sm font-medium text-foreground">Notes / Status</th>
+                  <th className="text-center p-2 text-sm font-medium text-foreground">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredNotes.map(note => <tr key={note.id} className={cn("border-b border-border/50 hover:bg-muted/30", (note.is_leave || note.id.startsWith("weekly-off-")) && "bg-muted/20")}>
-                    <td className="p-3 text-sm text-foreground">
+                    <td className="p-2 text-sm text-foreground">
                       {format(new Date(note.date), "MMM dd, yyyy")}
                     </td>
-                    <td className="p-3 text-sm text-foreground">
+                    <td className="p-2 text-sm text-foreground">
                       {format(new Date(note.date), "EEEE")}
                     </td>
-                    <td className="p-3 text-sm text-foreground">{note.worker_name}</td>
-                    <td className="p-3 text-sm text-foreground">
+                    <td className="p-2 text-sm text-foreground">{note.worker_name}</td>
+                    <td className="p-2 text-sm text-foreground">
                       {note.is_leave ? <span className="text-muted-foreground italic">On Leave</span> : note.notes || "-"}
                     </td>
-                    <td className="p-3">
+                    <td className="p-2">
                       {!note.id.startsWith("weekly-off-") && <div className="flex justify-center gap-2">
                           <Button variant="ghost" size="sm" onClick={() => handleViewNote(note)}>
                             <Eye className="w-4 h-4" />
@@ -393,9 +388,6 @@ export default function DailyLog() {
                           {!note.is_historical && <Button variant="ghost" size="sm" onClick={() => handleDeleteNote(note.id)}>
                               <Trash2 className="w-4 h-4 text-destructive" />
                             </Button>}
-                          {note.is_historical && <span className="text-xs text-muted-foreground italic px-2">
-                              Historical
-                            </span>}
                         </div>}
                     </td>
                   </tr>)}
