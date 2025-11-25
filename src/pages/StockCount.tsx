@@ -96,9 +96,9 @@ export default function StockCount() {
   return (
     <div className="min-h-screen bg-background">
       <NavHeader />
-      <div className="py-8 px-3">
+      <div className="py-4 px-3">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Stock Management</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
@@ -112,7 +112,7 @@ export default function StockCount() {
       </div>
 
       {/* Stock Tiles Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 mb-4">
         {toys.map((toy) => (
           <StockTile
             key={toy.id}
@@ -128,10 +128,10 @@ export default function StockCount() {
         </div>
       )}
 
-      <Separator className="my-6" />
+      <Separator className="my-4" />
 
       {/* Transaction List */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         <h2 className="text-xl font-bold text-foreground">Recent Transactions</h2>
         
         <TransactionList

@@ -115,30 +115,30 @@ export function TransactionList({ transactions, toys, onTransactionDeleted, onTr
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Toy</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead className="text-right">Quantity</TableHead>
-              <TableHead className="text-right">Stock After</TableHead>
-              <TableHead>Customer/Notes</TableHead>
-              <TableHead className="text-right">Price</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+            <TableRow className="h-9">
+              <TableHead className="py-2">Date</TableHead>
+              <TableHead className="py-2">Toy</TableHead>
+              <TableHead className="py-2">Type</TableHead>
+              <TableHead className="text-right py-2">Quantity</TableHead>
+              <TableHead className="text-right py-2">Stock After</TableHead>
+              <TableHead className="py-2">Customer/Notes</TableHead>
+              <TableHead className="text-right py-2">Price</TableHead>
+              <TableHead className="text-right py-2">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {activeTransactions.map((transaction) => (
-              <TableRow key={transaction.id}>
-                <TableCell className="font-medium">
+              <TableRow key={transaction.id} className="h-11">
+                <TableCell className="font-medium py-2">
                   {format(new Date(transaction.created_at), "MMM d, yyyy")}
                 </TableCell>
-                <TableCell>{getToyName(transaction.toy_id)}</TableCell>
-                <TableCell>
+                <TableCell className="py-2">{getToyName(transaction.toy_id)}</TableCell>
+                <TableCell className="py-2">
                   <Badge variant={getTransactionTypeVariant(transaction.transaction_type)}>
                     {getTransactionTypeLabel(transaction.transaction_type)}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right py-2">
                   <div className="flex items-center justify-end gap-1">
                     {transaction.quantity > 0 ? (
                       <ArrowUpCircle className="w-4 h-4 text-green-600" />
@@ -150,10 +150,10 @@ export function TransactionList({ transactions, toys, onTransactionDeleted, onTr
                     </span>
                   </div>
                 </TableCell>
-                <TableCell className="text-right font-medium">
+                <TableCell className="text-right font-medium py-2">
                   {transaction.stock_after}
                 </TableCell>
-                <TableCell className="max-w-xs truncate">
+                <TableCell className="max-w-xs truncate py-2">
                   {transaction.customer_name && (
                     <span className="font-medium">{transaction.customer_name}</span>
                   )}
@@ -162,24 +162,26 @@ export function TransactionList({ transactions, toys, onTransactionDeleted, onTr
                     <span className="text-muted-foreground">{transaction.notes}</span>
                   )}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right py-2">
                   {transaction.price ? `₹${transaction.price.toFixed(2)}` : "-"}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right py-2">
                   <div className="flex items-center justify-end gap-1">
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="h-7 w-7 p-0"
                       onClick={() => onTransactionEdit(transaction)}
                     >
-                      <Pencil className="w-4 h-4" />
+                      <Pencil className="w-3.5 h-3.5" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="h-7 w-7 p-0"
                       onClick={() => setDeleteId(transaction.id)}
                     >
-                      <Trash2 className="w-4 h-4 text-destructive" />
+                      <Trash2 className="w-3.5 h-3.5 text-destructive" />
                     </Button>
                   </div>
                 </TableCell>

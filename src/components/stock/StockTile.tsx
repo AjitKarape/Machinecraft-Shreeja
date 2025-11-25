@@ -18,7 +18,7 @@ export function StockTile({ toy, onClick }: StockTileProps) {
       className="overflow-hidden hover:shadow-md transition-all cursor-pointer hover:scale-[1.02]" 
       onClick={onClick}
     >
-      <CardContent className="p-4">
+      <CardContent className="p-3">
         <div className="flex items-center gap-3">
           {toy.image_url && (
             <div className="w-12 h-12 flex-shrink-0 rounded-md overflow-hidden bg-muted">
