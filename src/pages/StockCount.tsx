@@ -96,7 +96,7 @@ export default function StockCount() {
   return (
     <div className="min-h-screen bg-background">
       <NavHeader />
-      <div className="container mx-auto py-8 px-4">
+      <div className="py-8 px-3">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>

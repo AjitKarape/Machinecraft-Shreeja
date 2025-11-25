@@ -479,7 +479,7 @@ export default function Settings() {
   return <div className="min-h-screen bg-background">
       <NavHeader />
       
-      <main className="max-w-screen-2xl mx-auto px-4 py-4">
+      <main className="px-3 py-3">
         <div className="mb-4">
           <h1 className="text-foreground mb-1 text-xl font-medium">Settings</h1>
           

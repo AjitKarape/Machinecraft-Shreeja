@@ -290,7 +290,7 @@ export default function CostSummary() {
     <div className="min-h-screen bg-background">
       <NavHeader />
       
-      <main className="max-w-screen-2xl mx-auto px-4 py-4">
+      <main className="px-3 py-3">
         <div className="mb-6">
           <h1 className="text-foreground mb-4 text-xl font-normal">Cost Summary</h1>
           
