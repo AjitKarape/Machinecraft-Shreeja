@@ -107,9 +107,19 @@ export function StockTransactionDialog({
     setIsSubmitting(true);
     
     try {
+      // Fetch the latest stock value to ensure accurate calculation
+      const { data: latestToy, error: fetchError } = await supabase
+        .from("toys")
+        .select("current_stock")
+        .eq("id", toyId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const currentStock = latestToy?.current_stock || 0;
       const isDeduction = transactionType === "sale" || transactionType === "sample";
       const actualQuantity = isDeduction ? -qty : qty;
-      const stockAfter = selectedToy.current_stock + actualQuantity;
+      const stockAfter = currentStock + actualQuantity;
 
       const { error } = await supabase
         .from("stock_transactions")
