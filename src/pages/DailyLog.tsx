@@ -154,18 +154,33 @@ export default function DailyLog() {
     }
   };
   const handleDeleteNote = async (id: string) => {
-    // Prevent deletion of historical logs
-    if (id.startsWith("historical-")) {
-      toast.error("Cannot delete historical production logs");
+    // Prevent deletion of weekly-off entries
+    if (id.startsWith("weekly-off-")) {
+      toast.error("Cannot delete weekly off entries");
       return;
     }
-    const {
-      error
-    } = await supabase.from("daily_notes").delete().eq("id", id);
-    if (error) {
-      toast.error("Error deleting note");
+
+    // Check if this is a historical note from production_logs
+    if (id.startsWith("historical-")) {
+      const realId = id.replace("historical-", "");
+      const { error } = await supabase.from("production_logs").delete().eq("id", realId);
+      if (error) {
+        console.error("Error deleting production log:", error);
+        toast.error("Error deleting note");
+      } else {
+        toast.success("Note deleted successfully");
+        await fetchProductionLogs();
+      }
     } else {
-      toast.success("Note deleted successfully");
+      // Regular daily_notes entry
+      const { error } = await supabase.from("daily_notes").delete().eq("id", id);
+      if (error) {
+        console.error("Error deleting daily note:", error);
+        toast.error("Error deleting note");
+      } else {
+        toast.success("Note deleted successfully");
+        await fetchNotes();
+      }
     }
   };
   const handleViewNote = (note: DailyNote) => {
@@ -434,9 +449,9 @@ export default function DailyLog() {
                           <Button variant="ghost" size="sm" onClick={() => handleEditNote(note)}>
                             <Pencil className="w-4 h-4" />
                           </Button>
-                          {!note.is_historical && <Button variant="ghost" size="sm" onClick={() => handleDeleteNote(note.id)}>
-                              <Trash2 className="w-4 h-4 text-destructive" />
-                            </Button>}
+                          <Button variant="ghost" size="sm" onClick={() => handleDeleteNote(note.id)}>
+                            <Trash2 className="w-4 h-4 text-destructive" />
+                          </Button>
                         </div>}
                     </td>
                   </tr>)}
