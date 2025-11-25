@@ -39,11 +39,6 @@ export function StockTile({ toy, onClick }: StockTileProps) {
               </span>
               <span className="text-xs text-muted-foreground">units</span>
             </div>
-            {toy.last_transaction_at && (
-              <p className="text-[10px] text-muted-foreground mt-1 truncate">
-                Updated {format(new Date(toy.last_transaction_at), "MMM d, h:mm a")}
-              </p>
-            )}
           </div>
         </div>
       </CardContent>
