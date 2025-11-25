@@ -586,6 +586,7 @@ export type Database = {
           id: string
           is_completed: boolean | null
           name: string
+          parent_step_id: string | null
           step_number: number
           task_id: string
           updated_at: string | null
@@ -595,6 +596,7 @@ export type Database = {
           id?: string
           is_completed?: boolean | null
           name: string
+          parent_step_id?: string | null
           step_number: number
           task_id: string
           updated_at?: string | null
@@ -604,11 +606,19 @@ export type Database = {
           id?: string
           is_completed?: boolean | null
           name?: string
+          parent_step_id?: string | null
           step_number?: number
           task_id?: string
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "task_steps_parent_step_id_fkey"
+            columns: ["parent_step_id"]
+            isOneToOne: false
+            referencedRelation: "task_steps"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "task_steps_task_id_fkey"
             columns: ["task_id"]
