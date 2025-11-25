@@ -120,7 +120,6 @@ export function TransactionList({ transactions, toys, onTransactionDeleted, onTr
               <TableHead className="py-2">Toy</TableHead>
               <TableHead className="py-2">Type</TableHead>
               <TableHead className="text-right py-2">Quantity</TableHead>
-              <TableHead className="text-right py-2">Stock After</TableHead>
               <TableHead className="py-2">Customer/Notes</TableHead>
               <TableHead className="text-right py-2">Price</TableHead>
               <TableHead className="text-right py-2">Actions</TableHead>
@@ -149,9 +148,6 @@ export function TransactionList({ transactions, toys, onTransactionDeleted, onTr
                       {transaction.quantity > 0 ? "+" : ""}{transaction.quantity}
                     </span>
                   </div>
-                </TableCell>
-                <TableCell className="text-right font-medium py-2">
-                  {transaction.stock_after}
                 </TableCell>
                 <TableCell className="max-w-xs truncate py-2">
                   {transaction.customer_name && (
