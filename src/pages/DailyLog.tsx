@@ -159,7 +159,15 @@ export default function DailyLog() {
     setSelectedNote(note);
     setSelectedDate(new Date(note.date));
     setEmployeeName(note.worker_name);
-    setNoteText(note.notes || "");
+    
+    // For historical notes, extract just the notes portion after the pipe
+    if (note.is_historical && note.notes) {
+      const parts = note.notes.split(" | ");
+      setNoteText(parts.length > 1 ? parts.slice(1).join(" | ") : "");
+    } else {
+      setNoteText(note.notes || "");
+    }
+    
     setIsLeave(note.is_leave);
     setIsEditDialogOpen(true);
   };
@@ -180,11 +188,14 @@ export default function DailyLog() {
       }).eq("id", realId);
       
       if (error) {
+        console.error("Error updating production log:", error);
         toast.error("Error updating note");
       } else {
         toast.success("Note updated successfully");
         setIsEditDialogOpen(false);
         resetForm();
+        // Refresh data
+        await fetchProductionLogs();
       }
     } else {
       const { error } = await supabase.from("daily_notes").update({
@@ -195,11 +206,14 @@ export default function DailyLog() {
       }).eq("id", selectedNote.id);
       
       if (error) {
+        console.error("Error updating daily note:", error);
         toast.error("Error updating note");
       } else {
         toast.success("Note updated successfully");
         setIsEditDialogOpen(false);
         resetForm();
+        // Refresh data
+        await fetchNotes();
       }
     }
   };
