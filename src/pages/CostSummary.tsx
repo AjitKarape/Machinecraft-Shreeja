@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { NavHeader } from "@/components/NavHeader";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { IndianRupee, TrendingUp, ChevronDown, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "@/contexts/DataContext";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import { Collapsible, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Separator } from "@/components/ui/separator";
 
 interface BankTransaction {
   id: string;
@@ -290,81 +291,119 @@ export default function CostSummary() {
     <div className="min-h-screen bg-background">
       <NavHeader />
       
-      <main className="px-3 py-3">
-        <div className="mb-6">
-          <h1 className="text-foreground mb-4 text-xl font-normal">Cost Summary</h1>
-          
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <Card>
-              <CardContent className="pt-4 pb-4">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <IndianRupee className="w-4 h-4 text-primary" />
-                  <span className="text-xs text-muted-foreground">Gross Profit</span>
-                </div>
-                <div className={`text-2xl font-bold ${grossProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  ₹{grossProfit.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-4 pb-4">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <TrendingUp className="w-4 h-4 text-primary" />
-                  <span className="text-xs text-muted-foreground">Net Profit</span>
-                </div>
-                <div className={`text-2xl font-bold ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  ₹{netProfit.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-4 pb-4">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <IndianRupee className="w-4 h-4 text-primary" />
-                  <span className="text-xs text-muted-foreground">Total Revenue</span>
-                </div>
-                <div className="text-2xl font-bold text-foreground">
-                  ₹{totalYearRevenue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-4 pb-4">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <IndianRupee className="w-4 h-4 text-primary" />
-                  <span className="text-xs text-muted-foreground">Funding (Total as on date)</span>
-                </div>
-                <div className="text-2xl font-bold text-foreground">
-                  ₹{totalFunding.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-                </div>
-              </CardContent>
-            </Card>
+      <main className="px-3 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Cost Summary</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              4 metrics · FY {selectedFinancialYear}-{String(selectedFinancialYear + 1).slice(2)}
+            </p>
           </div>
+          <select
+            className="border rounded px-3 py-2 text-sm bg-background"
+            value={selectedFinancialYear}
+            onChange={(e) => setSelectedFinancialYear(Number(e.target.value))}
+          >
+            {availableYears.map((year) => (
+              <option key={year} value={year}>
+                FY {year}-{String(year + 1).slice(2)}
+              </option>
+            ))}
+          </select>
+        </div>
 
-          {/* P&L Statement Table */}
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-xl font-semibold font-sans">Profit & Loss Statement (Apr - Mar)</CardTitle>
-                <select
-                  className="border rounded px-3 py-1.5 text-sm bg-background"
-                  value={selectedFinancialYear}
-                  onChange={(e) => setSelectedFinancialYear(Number(e.target.value))}
-                >
-                  {availableYears.map((year) => (
-                    <option key={year} value={year}>
-                      FY {year}-{String(year + 1).slice(2)}
-                    </option>
-                  ))}
-                </select>
+        {/* Summary Tiles */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-6">
+          <Card className="overflow-hidden hover:shadow-md transition-all">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 flex-shrink-0 rounded-md bg-primary/10 flex items-center justify-center">
+                  <TrendingUp className="w-5 h-5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-xs text-muted-foreground mb-1 truncate">
+                    Gross Profit
+                  </h3>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className={`text-2xl font-bold leading-none ${grossProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      ₹{Math.abs(grossProfit).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                    </span>
+                  </div>
+                </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto border rounded-md">
+            </CardContent>
+          </Card>
+
+          <Card className="overflow-hidden hover:shadow-md transition-all">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 flex-shrink-0 rounded-md bg-primary/10 flex items-center justify-center">
+                  <IndianRupee className="w-5 h-5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-xs text-muted-foreground mb-1 truncate">
+                    Net Profit
+                  </h3>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className={`text-2xl font-bold leading-none ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      ₹{Math.abs(netProfit).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="overflow-hidden hover:shadow-md transition-all">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 flex-shrink-0 rounded-md bg-primary/10 flex items-center justify-center">
+                  <IndianRupee className="w-5 h-5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-xs text-muted-foreground mb-1 truncate">
+                    Total Revenue
+                  </h3>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-2xl font-bold text-primary leading-none">
+                      ₹{totalYearRevenue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="overflow-hidden hover:shadow-md transition-all">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 flex-shrink-0 rounded-md bg-primary/10 flex items-center justify-center">
+                  <IndianRupee className="w-5 h-5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-xs text-muted-foreground mb-1 truncate">
+                    Total Funding
+                  </h3>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-2xl font-bold text-primary leading-none">
+                      ₹{totalFunding.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Separator className="my-6" />
+
+        {/* P&L Statement Table */}
+        <div className="mb-6">
+          <h2 className="text-xl font-bold text-foreground mb-4">
+            Profit & Loss Statement (Apr - Mar)
+          </h2>
+          <div className="overflow-x-auto border rounded-md">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted hover:bg-muted">
@@ -607,8 +646,6 @@ export default function CostSummary() {
                   </TableBody>
                 </Table>
               </div>
-            </CardContent>
-          </Card>
         </div>
       </main>
     </div>
