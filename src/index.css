@@ -20,7 +20,7 @@ All colors MUST be HSL.
 @layer base {
   :root {
     /* Warm beige/cream backgrounds */
-    --background: 210 40% 98.0392%;
+    --background: 209 40% 96%;
     --foreground: 222 47% 11%;
 
     /* Card with light beige tone */
@@ -32,7 +32,7 @@ All colors MUST be HSL.
 
     /* Rich brown primary */
     --primary: 200 98% 39%;
-    --primary-foreground: 210 40% 98.0392%;
+    --primary-foreground: 204 100% 97%;
 
     /* Lighter brown secondary */
     --secondary: 215 24% 26%;
