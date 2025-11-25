@@ -22,6 +22,7 @@ interface DailyNote {
   notes: string | null;
   is_leave: boolean;
   is_historical?: boolean;
+  original_notes?: string | null; // Store original notes for historical entries
 }
 interface ProductionLog {
   id: string;
@@ -124,7 +125,8 @@ export default function DailyLog() {
       worker_name: log.worker_name,
       notes: noteText,
       is_leave: isOnLeave,
-      is_historical: true
+      is_historical: true,
+      original_notes: log.notes // Store the original database notes
     };
   });
 
@@ -175,10 +177,9 @@ export default function DailyLog() {
     setSelectedDate(new Date(note.date));
     setEmployeeName(note.worker_name);
     
-    // For historical notes, extract just the notes portion after the pipe
-    if (note.is_historical && note.notes) {
-      const parts = note.notes.split(" | ");
-      setNoteText(parts.length > 1 ? parts.slice(1).join(" | ") : "");
+    // For historical notes, use the original notes from the database
+    if (note.is_historical) {
+      setNoteText(note.original_notes || "");
     } else {
       setNoteText(note.notes || "");
     }
@@ -465,7 +466,12 @@ export default function DailyLog() {
                 </div>
                 <div>
                   <Label className="text-muted-foreground">Notes</Label>
-                  <p className="text-foreground">{selectedNote.notes || "-"}</p>
+                  <p className="text-foreground">
+                    {selectedNote.is_historical 
+                      ? (selectedNote.original_notes || "-")
+                      : (selectedNote.notes || "-")
+                    }
+                  </p>
                 </div>
               </div>}
           </DialogContent>
