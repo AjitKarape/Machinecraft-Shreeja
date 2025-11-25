@@ -168,20 +168,39 @@ export default function DailyLog() {
       toast.error("Please fill in all required fields");
       return;
     }
-    const {
-      error
-    } = await supabase.from("daily_notes").update({
-      date: format(selectedDate, "yyyy-MM-dd"),
-      worker_name: employeeName,
-      notes: noteText || null,
-      is_leave: isLeave
-    }).eq("id", selectedNote.id);
-    if (error) {
-      toast.error("Error updating note");
+
+    // Check if this is a historical note (from production_logs)
+    if (selectedNote.is_historical && selectedNote.id.startsWith("historical-")) {
+      const realId = selectedNote.id.replace("historical-", "");
+      const { error } = await supabase.from("production_logs").update({
+        date: format(selectedDate, "yyyy-MM-dd"),
+        worker_name: employeeName,
+        notes: noteText || null,
+        session: isLeave ? "On Leave" : "Whole Day"
+      }).eq("id", realId);
+      
+      if (error) {
+        toast.error("Error updating note");
+      } else {
+        toast.success("Note updated successfully");
+        setIsEditDialogOpen(false);
+        resetForm();
+      }
     } else {
-      toast.success("Note updated successfully");
-      setIsEditDialogOpen(false);
-      resetForm();
+      const { error } = await supabase.from("daily_notes").update({
+        date: format(selectedDate, "yyyy-MM-dd"),
+        worker_name: employeeName,
+        notes: noteText || null,
+        is_leave: isLeave
+      }).eq("id", selectedNote.id);
+      
+      if (error) {
+        toast.error("Error updating note");
+      } else {
+        toast.success("Note updated successfully");
+        setIsEditDialogOpen(false);
+        resetForm();
+      }
     }
   };
   const resetForm = () => {
