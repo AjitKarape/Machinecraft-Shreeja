@@ -16,8 +16,8 @@ export const NavHeader = () => {
       navigate("/auth");
     }
   };
-  return <header className="bg-background border-b border-border px-4 py-2">
-      <div className="flex items-center justify-between max-w-screen-2xl mx-auto">
+  return <header className="bg-background border-b border-border px-3 py-2">
+      <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-yellow-800">machinecraft.co</h1>
         
         <nav className="flex items-center gap-1">
