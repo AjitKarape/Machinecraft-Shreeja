@@ -113,7 +113,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       <NavHeader />
       
-      <main className="max-w-screen-2xl mx-auto px-3 py-2">
+      <main className="px-3 py-2">
         <div className="mb-3">
           <div className="flex items-center justify-between mb-3">
             <h1 className="text-foreground text-xl font-medium">Action Plan</h1>
