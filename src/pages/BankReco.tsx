@@ -771,7 +771,7 @@ export default function BankReco() {
   return <div className="min-h-screen bg-background">
       <NavHeader />
       
-      <main className="max-w-screen-2xl mx-auto px-3 py-2">
+      <main className="px-3 py-2">
         <div className="mb-3">
           <h1 className="text-foreground mb-1 text-xl font-medium">Bank Reconciliation</h1>
         </div>

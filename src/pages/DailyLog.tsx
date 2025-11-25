@@ -303,7 +303,7 @@ export default function DailyLog() {
   return <div className="min-h-screen bg-background">
       <NavHeader />
       
-      <main className="max-w-screen-2xl mx-auto px-3 py-3">
+      <main className="px-3 py-3">
         <div className="mb-3">
           <div className="flex justify-between items-start mb-3">
             <div>
