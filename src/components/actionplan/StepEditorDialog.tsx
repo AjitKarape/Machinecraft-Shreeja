@@ -23,10 +23,11 @@ interface StepEditorDialogProps {
     id: string;
     name: string;
   };
+  parentStepId?: string | null;
   onSuccess: () => void;
 }
 
-export function StepEditorDialog({ open, onOpenChange, taskId, step, onSuccess }: StepEditorDialogProps) {
+export function StepEditorDialog({ open, onOpenChange, taskId, step, parentStepId, onSuccess }: StepEditorDialogProps) {
   const [stepName, setStepName] = useState("");
   const [fields, setFields] = useState<Field[]>([]);
   const [saving, setSaving] = useState(false);
@@ -111,7 +112,8 @@ export function StepEditorDialog({ open, onOpenChange, taskId, step, onSuccess }
           .insert({
             task_id: taskId,
             name: stepName.trim(),
-            step_number: nextStepNumber
+            step_number: nextStepNumber,
+            parent_step_id: parentStepId || null
           })
           .select()
           .single();
@@ -172,7 +174,9 @@ export function StepEditorDialog({ open, onOpenChange, taskId, step, onSuccess }
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{step ? 'Edit Step' : 'Add New Step'}</DialogTitle>
+          <DialogTitle>
+            {step ? (parentStepId ? 'Edit Sub-step' : 'Edit Step') : (parentStepId ? 'Add New Sub-step' : 'Add New Step')}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">

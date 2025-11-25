@@ -73,15 +73,16 @@ export default function Dashboard() {
     if (tasksData) {
       setTasks(tasksData);
       
-      // Fetch step counts for each task
+      // Fetch step counts for each task (including sub-steps)
       const counts: Record<string, StepCount> = {};
       for (const task of tasksData) {
         const { data: steps } = await supabase
           .from('task_steps')
-          .select('id, is_completed')
+          .select('id, is_completed, parent_step_id')
           .eq('task_id', task.id);
 
         if (steps) {
+          // Count all steps and sub-steps
           counts[task.id] = {
             task_id: task.id,
             total_steps: steps.length,

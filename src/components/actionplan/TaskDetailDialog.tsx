@@ -33,6 +33,7 @@ export function TaskDetailDialog({ open, onOpenChange, taskId, onSuccess }: Task
   const [editingTask, setEditingTask] = useState(false);
   const [stepEditorOpen, setStepEditorOpen] = useState(false);
   const [editingStep, setEditingStep] = useState<any>(null);
+  const [parentStepId, setParentStepId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingStepId, setDeletingStepId] = useState<string | null>(null);
 
@@ -65,9 +66,18 @@ export function TaskDetailDialog({ open, onOpenChange, taskId, onSuccess }: Task
     if (stepsData) {
       const stepsWithSortedFields = stepsData.map(step => ({
         ...step,
-        step_fields: step.step_fields?.sort((a: any, b: any) => a.field_order - b.field_order) || []
+        step_fields: step.step_fields?.sort((a: any, b: any) => a.field_order - b.field_order) || [],
+        subSteps: stepsData
+          .filter(s => s.parent_step_id === step.id)
+          .map(subStep => ({
+            ...subStep,
+            step_fields: subStep.step_fields?.sort((a: any, b: any) => a.field_order - b.field_order) || []
+          }))
       }));
-      setSteps(stepsWithSortedFields);
+      
+      // Only show main steps (no parent)
+      const mainSteps = stepsWithSortedFields.filter(step => !step.parent_step_id);
+      setSteps(mainSteps);
     }
   };
 
@@ -274,6 +284,7 @@ export function TaskDetailDialog({ open, onOpenChange, taskId, onSuccess }: Task
                   size="sm"
                   onClick={() => {
                     setEditingStep(null);
+                    setParentStepId(null);
                     setStepEditorOpen(true);
                   }}
                 >
@@ -303,13 +314,31 @@ export function TaskDetailDialog({ open, onOpenChange, taskId, onSuccess }: Task
                         )}
                         <span className={step.is_completed ? 'line-through text-muted-foreground' : ''}>
                           Step {index + 1}: {step.name}
+                          {step.subSteps?.length > 0 && (
+                            <span className="text-xs text-muted-foreground ml-2">
+                              ({step.subSteps.length} sub-step{step.subSteps.length !== 1 ? 's' : ''})
+                            </span>
+                          )}
                         </span>
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => {
+                          setParentStepId(step.id);
+                          setEditingStep(null);
+                          setStepEditorOpen(true);
+                        }}
+                        title="Add Sub-step"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
                           setEditingStep(step);
+                          setParentStepId(null);
                           setStepEditorOpen(true);
                         }}
                       >
@@ -335,6 +364,70 @@ export function TaskDetailDialog({ open, onOpenChange, taskId, onSuccess }: Task
                             field={field}
                             onUpdate={handleFieldUpdate}
                           />
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Sub-steps */}
+                    {step.subSteps && step.subSteps.length > 0 && (
+                      <div className="ml-8 mt-2 space-y-2 border-l-2 border-border pl-3">
+                        {step.subSteps.map((subStep: any, subIndex: number) => (
+                          <div key={subStep.id} className="border rounded-lg p-2 bg-muted/30 space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Checkbox
+                                checked={subStep.is_completed}
+                                onCheckedChange={(checked) => handleStepComplete(subStep.id, !!checked)}
+                              />
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="flex-1 justify-start text-sm"
+                                onClick={() => toggleStep(subStep.id)}
+                              >
+                                {expandedSteps.has(subStep.id) ? (
+                                  <ChevronDown className="w-3 h-3 mr-2" />
+                                ) : (
+                                  <ChevronRight className="w-3 h-3 mr-2" />
+                                )}
+                                <span className={subStep.is_completed ? 'line-through text-muted-foreground' : ''}>
+                                  {index + 1}.{subIndex + 1}: {subStep.name}
+                                </span>
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setEditingStep(subStep);
+                                  setParentStepId(step.id);
+                                  setStepEditorOpen(true);
+                                }}
+                              >
+                                <Edit className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setDeletingStepId(subStep.id);
+                                  setDeleteDialogOpen(true);
+                                }}
+                              >
+                                <Trash2 className="w-3 h-3 text-destructive" />
+                              </Button>
+                            </div>
+
+                            {expandedSteps.has(subStep.id) && subStep.step_fields.length > 0 && (
+                              <div className="pl-6 space-y-2 mt-2">
+                                {subStep.step_fields.map((field: any) => (
+                                  <FieldRenderer
+                                    key={field.id}
+                                    field={field}
+                                    onUpdate={handleFieldUpdate}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         ))}
                       </div>
                     )}
@@ -372,6 +465,7 @@ export function TaskDetailDialog({ open, onOpenChange, taskId, onSuccess }: Task
         onOpenChange={setStepEditorOpen}
         taskId={taskId!}
         step={editingStep}
+        parentStepId={parentStepId}
         onSuccess={loadTaskData}
       />
 
