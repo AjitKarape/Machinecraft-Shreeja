@@ -121,7 +121,8 @@ export function StockTransactionDialog({
       const actualQuantity = isDeduction ? -qty : qty;
       const stockAfter = currentStock + actualQuantity;
 
-      const { error } = await supabase
+      // Insert transaction
+      const { error: transactionError } = await supabase
         .from("stock_transactions")
         .insert({
           toy_id: toyId,
@@ -134,7 +135,18 @@ export function StockTransactionDialog({
           created_at: date.toISOString(),
         });
 
-      if (error) throw error;
+      if (transactionError) throw transactionError;
+
+      // Update toy's current stock and last transaction timestamp
+      const { error: updateError } = await supabase
+        .from("toys")
+        .update({
+          current_stock: stockAfter,
+          last_transaction_at: date.toISOString(),
+        })
+        .eq("id", toyId);
+
+      if (updateError) throw updateError;
 
       const actionText = {
         production: "added",
