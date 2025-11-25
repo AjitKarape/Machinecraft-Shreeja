@@ -53,16 +53,31 @@ export default function DailyLog() {
   useEffect(() => {
     fetchNotes();
     fetchProductionLogs();
-    const notesChannel = supabase.channel("daily-notes-changes").on("postgres_changes", {
-      event: "*",
-      schema: "public",
-      table: "daily_notes"
-    }, fetchNotes).subscribe();
-    const logsChannel = supabase.channel("production-logs-history").on("postgres_changes", {
-      event: "*",
-      schema: "public",
-      table: "production_logs"
-    }, fetchProductionLogs).subscribe();
+    
+    const notesChannel = supabase
+      .channel("daily-notes-changes")
+      .on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "daily_notes"
+      }, () => {
+        console.log("Daily notes changed, refreshing...");
+        fetchNotes();
+      })
+      .subscribe();
+    
+    const logsChannel = supabase
+      .channel("production-logs-history")
+      .on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "production_logs"
+      }, () => {
+        console.log("Production logs changed, refreshing...");
+        fetchProductionLogs();
+      })
+      .subscribe();
+    
     return () => {
       supabase.removeChannel(notesChannel);
       supabase.removeChannel(logsChannel);
