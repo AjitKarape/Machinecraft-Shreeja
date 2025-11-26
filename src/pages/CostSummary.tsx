@@ -26,6 +26,7 @@ interface ExpenseMapping {
   expense_head: string;
   group_name: string;
   is_revenue: boolean;
+  opening_balance: number;
 }
 
 interface StockCount {
@@ -232,7 +233,18 @@ export default function CostSummary() {
 
   const getAmountForMonth = (expenseHead: string, month: string) => {
     const item = aggregatedData.find(a => a.expense_head === expenseHead && a.month === month);
-    return item ? item.amount : 0;
+    let amount = item ? item.amount : 0;
+    
+    // Add opening balance for the first month of the financial year (April)
+    const firstMonth = fyMonths[0];
+    if (month === firstMonth) {
+      const mapping = expenseMappings.find(m => normalizeHead(m.expense_head) === expenseHead);
+      if (mapping && mapping.opening_balance) {
+        amount += mapping.opening_balance;
+      }
+    }
+    
+    return amount;
   };
 
   const getGroupTotal = (groupName: string, month: string) => {
