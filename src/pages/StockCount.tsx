@@ -8,6 +8,7 @@ import { StockTile } from "@/components/stock/StockTile";
 import { StockTransactionDialog } from "@/components/stock/StockTransactionDialog";
 import { TransactionList } from "@/components/stock/TransactionList";
 import { Separator } from "@/components/ui/separator";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface Transaction {
   id: string;
@@ -85,13 +86,23 @@ export default function StockCount() {
     setDialogOpen(true);
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-muted-foreground">Loading stock data...</p>
-      </div>
-    );
-  }
+  const renderSkeletonTiles = () => (
+    <>
+      {[...Array(4)].map((_, i) => (
+        <Card key={i} className="overflow-hidden">
+          <CardContent className="p-3">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 flex-shrink-0 rounded-md bg-muted animate-pulse" />
+              <div className="flex-1 min-w-0 space-y-2">
+                <div className="h-4 bg-muted rounded animate-pulse w-24" />
+                <div className="h-8 bg-muted rounded animate-pulse w-16" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </>
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -113,20 +124,22 @@ export default function StockCount() {
 
       {/* Stock Tiles Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 mb-4">
-        {toys.map((toy) => (
-          <StockTile
-            key={toy.id}
-            toy={toy}
-            onClick={() => handleOpenDialog(toy.id)}
-          />
-        ))}
+        {isLoading ? (
+          renderSkeletonTiles()
+        ) : toys.length > 0 ? (
+          toys.map((toy) => (
+            <StockTile
+              key={toy.id}
+              toy={toy}
+              onClick={() => handleOpenDialog(toy.id)}
+            />
+          ))
+        ) : (
+          <div className="col-span-full text-center py-12 text-muted-foreground">
+            <p>No toys found. Add some toys to start managing stock.</p>
+          </div>
+        )}
       </div>
-
-      {toys.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground">
-          <p>No toys found. Add some toys to start managing stock.</p>
-        </div>
-      )}
 
       <Separator className="my-4" />
 
