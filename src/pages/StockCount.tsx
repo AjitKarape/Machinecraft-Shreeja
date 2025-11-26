@@ -26,7 +26,7 @@ interface Transaction {
 type TransactionType = "production" | "sale" | "sample";
 
 export default function StockCount() {
-  const { toys, isLoading } = useData();
+  const { toys, isLoading, refetchToys } = useData();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [selectedToyId, setSelectedToyId] = useState<string | undefined>();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -77,6 +77,7 @@ export default function StockCount() {
 
   const handleSuccess = () => {
     fetchTransactions();
+    refetchToys(); // Refresh toy stock values
   };
 
   const handleTransactionEdit = (transaction: Transaction) => {
@@ -150,7 +151,10 @@ export default function StockCount() {
         <TransactionList
           transactions={transactions}
           toys={toys}
-          onTransactionDeleted={fetchTransactions}
+          onTransactionDeleted={() => {
+            fetchTransactions();
+            refetchToys(); // Refresh toy stock after deletion
+          }}
           onTransactionEdit={handleTransactionEdit}
         />
       </div>
