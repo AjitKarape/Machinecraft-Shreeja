@@ -60,6 +60,7 @@ export default function Settings() {
   const [newExpenseHead, setNewExpenseHead] = useState("");
   const [newGroup, setNewGroup] = useState("");
   const [newIsRevenue, setNewIsRevenue] = useState(false);
+  const [newOpeningBalance, setNewOpeningBalance] = useState("0");
   useEffect(() => {
     fetchUserData();
     fetchExpenseMappings();
@@ -397,7 +398,8 @@ export default function Settings() {
     const { error } = await supabase.from("expense_mapping").insert({
       expense_head: newExpenseHead,
       group_name: newGroup,
-      is_revenue: newIsRevenue
+      is_revenue: newIsRevenue,
+      opening_balance: parseFloat(newOpeningBalance) || 0
     });
     
     if (error) {
@@ -408,6 +410,7 @@ export default function Settings() {
       setNewExpenseHead("");
       setNewGroup("");
       setNewIsRevenue(false);
+      setNewOpeningBalance("0");
       fetchExpenseMappings();
     }
   };
@@ -445,6 +448,7 @@ export default function Settings() {
     setNewExpenseHead(mapping.expense_head);
     setNewGroup(mapping.group_name);
     setNewIsRevenue(mapping.is_revenue);
+    setNewOpeningBalance(mapping.opening_balance?.toString() || "0");
     setIsEditExpenseMappingOpen(true);
   };
 
@@ -459,7 +463,8 @@ export default function Settings() {
       .update({
         expense_head: newExpenseHead,
         group_name: newGroup,
-        is_revenue: newIsRevenue
+        is_revenue: newIsRevenue,
+        opening_balance: parseFloat(newOpeningBalance) || 0
       })
       .eq("id", editingExpenseMapping.id);
     
@@ -472,6 +477,7 @@ export default function Settings() {
       setNewExpenseHead("");
       setNewGroup("");
       setNewIsRevenue(false);
+      setNewOpeningBalance("0");
       fetchExpenseMappings();
     }
   };
@@ -707,6 +713,16 @@ export default function Settings() {
                       <Label>Group</Label>
                       <Input value={newGroup} onChange={e => setNewGroup(e.target.value)} placeholder="e.g., Operating Cost, Direct Expenses" />
                     </div>
+                    <div className="grid gap-2">
+                      <Label>Opening Balance</Label>
+                      <Input 
+                        type="number" 
+                        step="0.01"
+                        value={newOpeningBalance} 
+                        onChange={e => setNewOpeningBalance(e.target.value)} 
+                        placeholder="0.00" 
+                      />
+                    </div>
                     <div className="flex items-center gap-2">
                       <Switch 
                         checked={newIsRevenue} 
@@ -739,7 +755,7 @@ export default function Settings() {
                     <DialogHeader>
                       <DialogTitle>Edit Expense Mapping</DialogTitle>
                       <DialogDescription>
-                        Update the expense head, group, or revenue flag for this mapping.
+                        Update the expense head, group, opening balance, or revenue flag for this mapping.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto px-2">
@@ -750,6 +766,16 @@ export default function Settings() {
                       <div className="grid gap-2">
                         <Label>Group</Label>
                         <Input value={newGroup} onChange={e => setNewGroup(e.target.value)} placeholder="e.g., Operating Cost, Direct Expenses" />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Opening Balance</Label>
+                        <Input 
+                          type="number" 
+                          step="0.01"
+                          value={newOpeningBalance} 
+                          onChange={e => setNewOpeningBalance(e.target.value)} 
+                          placeholder="0.00" 
+                        />
                       </div>
                       <div className="flex items-center gap-2">
                         <Switch 
@@ -769,6 +795,7 @@ export default function Settings() {
                         setNewExpenseHead("");
                         setNewGroup("");
                         setNewIsRevenue(false);
+                        setNewOpeningBalance("0");
                       }}>Cancel</Button>
                       <Button onClick={handleEditExpenseMapping}>Update Mapping</Button>
                     </div>
@@ -782,6 +809,7 @@ export default function Settings() {
                   <tr>
                     <th className="text-left py-2 px-3 text-xs font-medium text-foreground">Expense Head</th>
                     <th className="text-left py-2 px-3 text-xs font-medium text-foreground">Group</th>
+                    <th className="text-right py-2 px-3 text-xs font-medium text-foreground">Opening Balance</th>
                     <th className="text-center py-2 px-3 text-xs font-medium text-foreground">Is Revenue</th>
                     <th className="text-center py-2 px-3 text-xs font-medium text-foreground">Actions</th>
                   </tr>
@@ -791,6 +819,9 @@ export default function Settings() {
                     <tr key={mapping.id} className="hover:bg-muted/50">
                       <td className="py-2 px-3 text-xs text-foreground">{mapping.expense_head}</td>
                       <td className="py-2 px-3 text-xs text-foreground">{mapping.group_name}</td>
+                      <td className="py-2 px-3 text-xs text-foreground text-right">
+                        {parseFloat(mapping.opening_balance || 0).toFixed(2)}
+                      </td>
                       <td className="py-2 px-3 text-center">
                         <Switch 
                           checked={mapping.is_revenue} 
@@ -821,7 +852,7 @@ export default function Settings() {
                   ))}
                   {expenseMappings.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
+                      <td colSpan={5} className="py-8 text-center text-sm text-muted-foreground">
                         No expense mappings added yet
                       </td>
                     </tr>
