@@ -269,9 +269,11 @@ export default function CostSummary() {
   const netProfit = grossProfit + totalYearOperatingExpenses;
 
   // Calculate total funding as on date (cumulative)
+  const fundingMapping = expenseMappings.find(m => normalizeHead(m.expense_head) === "Funding");
+  const fundingOpeningBalance = fundingMapping?.opening_balance || 0;
   const totalFunding = bankTransactions
     .filter(txn => txn.expense_head === "Funding")
-    .reduce((sum, txn) => sum + txn.amount, 0);
+    .reduce((sum, txn) => sum + txn.amount, 0) + fundingOpeningBalance;
 
   const availableYears = Array.from(
     new Set([
