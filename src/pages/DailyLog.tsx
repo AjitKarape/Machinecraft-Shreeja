@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Eye, Pencil, Trash2, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -45,6 +46,7 @@ export default function DailyLog() {
   const [selectedNote, setSelectedNote] = useState<DailyNote | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [noteText, setNoteText] = useState("");
+  const [isLeave, setIsLeave] = useState(false);
   const [filterMonth, setFilterMonth] = useState("");
   const [filterEmployee, setFilterEmployee] = useState("");
   useEffect(() => {
@@ -139,7 +141,7 @@ export default function DailyLog() {
       date: format(selectedDate, "yyyy-MM-dd"),
       worker_name: "Default",
       notes: noteText || null,
-      is_leave: false
+      is_leave: isLeave
     });
     if (error) {
       toast.error("Error adding note");
@@ -194,6 +196,7 @@ export default function DailyLog() {
       setNoteText(note.notes || "");
     }
     
+    setIsLeave(note.is_leave);
     setIsEditDialogOpen(true);
   };
   const handleUpdateNote = async () => {
@@ -208,7 +211,7 @@ export default function DailyLog() {
       const { error } = await supabase.from("production_logs").update({
         date: format(selectedDate, "yyyy-MM-dd"),
         notes: noteText || null,
-        session: "Whole Day"
+        session: isLeave ? "On Leave" : "Whole Day"
       }).eq("id", realId);
       
       if (error) {
@@ -225,7 +228,7 @@ export default function DailyLog() {
       const { error } = await supabase.from("daily_notes").update({
         date: format(selectedDate, "yyyy-MM-dd"),
         notes: noteText || null,
-        is_leave: false
+        is_leave: isLeave
       }).eq("id", selectedNote.id);
       
       if (error) {
@@ -244,6 +247,7 @@ export default function DailyLog() {
     setSelectedNote(null);
     setSelectedDate(new Date());
     setNoteText("");
+    setIsLeave(false);
   };
   const isThursday = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -334,6 +338,13 @@ export default function DailyLog() {
                         <Calendar mode="single" selected={selectedDate} onSelect={date => date && setSelectedDate(date)} />
                       </PopoverContent>
                     </Popover>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="is-leave" checked={isLeave} onCheckedChange={checked => setIsLeave(checked as boolean)} />
+                    <Label htmlFor="is-leave" className="text-sm font-medium cursor-pointer">
+                      On Leave
+                    </Label>
                   </div>
 
                   <div className="grid gap-2">
@@ -468,6 +479,13 @@ export default function DailyLog() {
                     <Calendar mode="single" selected={selectedDate} onSelect={date => date && setSelectedDate(date)} />
                   </PopoverContent>
                 </Popover>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox id="edit-is-leave" checked={isLeave} onCheckedChange={checked => setIsLeave(checked as boolean)} />
+                <Label htmlFor="edit-is-leave" className="text-sm font-medium cursor-pointer">
+                  On Leave
+                </Label>
               </div>
 
               <div className="grid gap-2">
