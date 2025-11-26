@@ -35,7 +35,7 @@ export function StockTile({ toy, onClick }: StockTileProps) {
             </h3>
             <div className="flex items-baseline gap-1.5">
               <span className="text-3xl font-bold text-primary leading-none">
-                {toy.current_stock}
+                {Math.max(0, toy.current_stock)}
               </span>
               <span className="text-xs text-muted-foreground">units</span>
             </div>
