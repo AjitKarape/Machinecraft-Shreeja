@@ -494,7 +494,6 @@ export default function Settings() {
         <Tabs defaultValue="toys" className="space-y-4">
           <TabsList className="bg-muted text-sm">
             <TabsTrigger value="toys" className="text-xs">Toys</TabsTrigger>
-            <TabsTrigger value="employees" className="text-xs">Employees</TabsTrigger>
             <TabsTrigger value="expense-mapping" className="text-xs">Expense Mapping</TabsTrigger>
             <TabsTrigger value="users" className="text-xs">User Management</TabsTrigger>
           </TabsList>
@@ -606,83 +605,6 @@ export default function Settings() {
               
               {toys.length === 0 && <div className="bg-card border border-border rounded-lg p-8 text-center">
                   <p className="text-sm text-muted-foreground">No toys added yet. Click "Add Toy" to create one.</p>
-                </div>}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="employees" className="space-y-3">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-foreground">Employees</h2>
-              <Dialog open={isAddEmployeeOpen} onOpenChange={setIsAddEmployeeOpen}>
-                <DialogTrigger asChild>
-                  <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                    <Plus className="w-4 h-4 mr-1.5" />
-                    Add Employee
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Add Employee</DialogTitle>
-                    <DialogDescription>
-                      Add a new employee to be used in daily notes and production logs.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto px-2">
-                    <div className="grid gap-2">
-                      <Label>Employee Name</Label>
-                      <Input value={employeeName} onChange={e => setEmployeeName(e.target.value)} placeholder="Enter employee name" />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label>Phone (Optional)</Label>
-                      <Input value={employeePhone} onChange={e => setEmployeePhone(e.target.value)} placeholder="Enter phone number" />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label>Notes (Optional)</Label>
-                      <Textarea value={employeeNotes} onChange={e => setEmployeeNotes(e.target.value)} placeholder="Any additional notes..." />
-                    </div>
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setIsAddEmployeeOpen(false)}>Cancel</Button>
-                    <Button onClick={handleAddEmployee}>Add Employee</Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-
-            <div className="grid gap-3">
-              {employees.map(employee => (
-                <div key={employee.id} className="bg-card border border-border rounded-lg overflow-hidden">
-                  <div className="bg-muted px-4 py-3 flex items-center justify-between">
-                    <div className="flex-1">
-                      <h3 className="text-base font-semibold text-foreground">{employee.name}</h3>
-                      {employee.phone && <p className="text-xs text-muted-foreground mt-0.5">Phone: {employee.phone}</p>}
-                      {employee.notes && <p className="text-xs text-muted-foreground mt-0.5">{employee.notes}</p>}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-2 mr-2">
-                        <Switch 
-                          checked={employee.is_active} 
-                          onCheckedChange={() => handleToggleEmployeeStatus(employee.id, employee.is_active)}
-                        />
-                        <span className="text-xs text-muted-foreground">
-                          {employee.is_active ? "Active" : "Inactive"}
-                        </span>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10" 
-                        onClick={() => handleDeleteEmployee(employee.id)}
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              
-              {employees.length === 0 && <div className="bg-card border border-border rounded-lg p-8 text-center">
-                  <p className="text-sm text-muted-foreground">No employees added yet. Click "Add Employee" to create one.</p>
                 </div>}
             </div>
           </TabsContent>
