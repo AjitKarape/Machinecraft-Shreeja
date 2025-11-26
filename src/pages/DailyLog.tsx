@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Eye, Pencil, Trash2, CalendarIcon } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -36,7 +35,6 @@ interface ProductionLog {
 }
 export default function DailyLog() {
   const {
-    employees,
     toys
   } = useData();
   const [notes, setNotes] = useState<DailyNote[]>([]);
@@ -46,9 +44,7 @@ export default function DailyLog() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedNote, setSelectedNote] = useState<DailyNote | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [employeeName, setEmployeeName] = useState("");
   const [noteText, setNoteText] = useState("");
-  const [isLeave, setIsLeave] = useState(false);
   const [filterMonth, setFilterMonth] = useState("");
   const [filterEmployee, setFilterEmployee] = useState("");
   useEffect(() => {
@@ -133,17 +129,17 @@ export default function DailyLog() {
   // Combine new notes and historical logs
   const allNotes = [...notes, ...historicalNotes];
   const handleAddNote = async () => {
-    if (!selectedDate || !employeeName) {
-      toast.error("Please fill in all required fields");
+    if (!selectedDate) {
+      toast.error("Please select a date");
       return;
     }
     const {
       error
     } = await supabase.from("daily_notes").insert({
       date: format(selectedDate, "yyyy-MM-dd"),
-      worker_name: employeeName,
+      worker_name: "Default",
       notes: noteText || null,
-      is_leave: isLeave
+      is_leave: false
     });
     if (error) {
       toast.error("Error adding note");
@@ -190,7 +186,6 @@ export default function DailyLog() {
   const handleEditNote = (note: DailyNote) => {
     setSelectedNote(note);
     setSelectedDate(new Date(note.date));
-    setEmployeeName(note.worker_name);
     
     // For historical notes, use the original notes from the database
     if (note.is_historical) {
@@ -199,12 +194,11 @@ export default function DailyLog() {
       setNoteText(note.notes || "");
     }
     
-    setIsLeave(note.is_leave);
     setIsEditDialogOpen(true);
   };
   const handleUpdateNote = async () => {
-    if (!selectedNote || !selectedDate || !employeeName) {
-      toast.error("Please fill in all required fields");
+    if (!selectedNote || !selectedDate) {
+      toast.error("Please select a date");
       return;
     }
 
@@ -213,9 +207,8 @@ export default function DailyLog() {
       const realId = selectedNote.id.replace("historical-", "");
       const { error } = await supabase.from("production_logs").update({
         date: format(selectedDate, "yyyy-MM-dd"),
-        worker_name: employeeName,
         notes: noteText || null,
-        session: isLeave ? "On Leave" : "Whole Day"
+        session: "Whole Day"
       }).eq("id", realId);
       
       if (error) {
@@ -231,9 +224,8 @@ export default function DailyLog() {
     } else {
       const { error } = await supabase.from("daily_notes").update({
         date: format(selectedDate, "yyyy-MM-dd"),
-        worker_name: employeeName,
         notes: noteText || null,
-        is_leave: isLeave
+        is_leave: false
       }).eq("id", selectedNote.id);
       
       if (error) {
@@ -251,15 +243,12 @@ export default function DailyLog() {
   const resetForm = () => {
     setSelectedNote(null);
     setSelectedDate(new Date());
-    setEmployeeName("");
     setNoteText("");
-    setIsLeave(false);
   };
   const isThursday = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.getDay() === 4;
   };
-  const activeEmployees = employees.filter(e => e.is_active);
   const availableMonths = Array.from(new Set(allNotes.map(note => format(new Date(note.date), "yyyy-MM")))).sort((a, b) => b.localeCompare(a));
   const availableEmployees = Array.from(new Set(allNotes.map(note => note.worker_name))).sort();
   const baseFilteredNotes = allNotes.filter(note => {
@@ -310,7 +299,13 @@ export default function DailyLog() {
               <h1 className="text-foreground mb-1 text-xl font-medium">Daily Log</h1>
             </div>
             
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
+              setIsAddDialogOpen(open);
+              if (open) {
+                // Reset the form when opening the dialog
+                resetForm();
+              }
+            }}>
               <DialogTrigger asChild>
                 <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
                   <Plus className="w-4 h-4 mr-1.5" />
@@ -321,7 +316,7 @@ export default function DailyLog() {
                 <DialogHeader>
                   <DialogTitle>Add Daily Note</DialogTitle>
                   <DialogDescription>
-                    Record daily work notes and leave information.
+                    Record daily work notes.
                   </DialogDescription>
                 </DialogHeader>
                 <ScrollArea className="max-h-[50vh] pr-4">
@@ -339,27 +334,6 @@ export default function DailyLog() {
                         <Calendar mode="single" selected={selectedDate} onSelect={date => date && setSelectedDate(date)} />
                       </PopoverContent>
                     </Popover>
-                  </div>
-
-                  <div className="grid gap-2">
-                    <Label>Employee Name</Label>
-                    <Select value={employeeName} onValueChange={setEmployeeName}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select employee" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {activeEmployees.map(emp => <SelectItem key={emp.id} value={emp.name}>
-                            {emp.name}
-                          </SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox id="is-leave" checked={isLeave} onCheckedChange={checked => setIsLeave(checked as boolean)} />
-                    <Label htmlFor="is-leave" className="text-sm font-medium cursor-pointer">
-                      On Leave
-                    </Label>
                   </div>
 
                   <div className="grid gap-2">
@@ -415,17 +389,7 @@ export default function DailyLog() {
                 <tr>
                   <th className="text-left p-2 text-sm font-medium text-foreground">Date</th>
                   <th className="text-left p-2 text-sm font-medium text-foreground">Day</th>
-                  <th className="text-left p-2 text-sm font-medium text-foreground">Employee
-
-
-
-
-
-
-
-
-                </th>
-                  <th className="text-left p-2 text-sm font-medium text-foreground">Notes / Status</th>
+                  <th className="text-left p-2 text-sm font-medium text-foreground">Notes</th>
                   <th className="text-center p-2 text-sm font-medium text-foreground">Actions</th>
                 </tr>
               </thead>
@@ -437,7 +401,6 @@ export default function DailyLog() {
                     <td className="p-2 text-sm text-foreground">
                       {format(new Date(note.date), "EEEE")}
                     </td>
-                    <td className="p-2 text-sm text-foreground">{note.worker_name}</td>
                     <td className="p-2 text-sm text-foreground">
                       {note.is_leave ? <span className="text-muted-foreground italic">On Leave</span> : note.notes || "-"}
                     </td>
@@ -470,14 +433,6 @@ export default function DailyLog() {
                 <div>
                   <Label className="text-muted-foreground">Date</Label>
                   <p className="text-foreground">{format(new Date(selectedNote.date), "PPP")}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Employee</Label>
-                  <p className="text-foreground">{selectedNote.worker_name}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Status</Label>
-                  <p className="text-foreground">{selectedNote.is_leave ? "On Leave" : "Working"}</p>
                 </div>
                 <div>
                   <Label className="text-muted-foreground">Notes</Label>
@@ -513,27 +468,6 @@ export default function DailyLog() {
                     <Calendar mode="single" selected={selectedDate} onSelect={date => date && setSelectedDate(date)} />
                   </PopoverContent>
                 </Popover>
-              </div>
-
-              <div className="grid gap-2">
-                <Label>Employee Name</Label>
-                <Select value={employeeName} onValueChange={setEmployeeName}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select employee" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {activeEmployees.map(emp => <SelectItem key={emp.id} value={emp.name}>
-                        {emp.name}
-                      </SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox id="edit-is-leave" checked={isLeave} onCheckedChange={checked => setIsLeave(checked as boolean)} />
-                <Label htmlFor="edit-is-leave" className="text-sm font-medium cursor-pointer">
-                  On Leave
-                </Label>
               </div>
 
               <div className="grid gap-2">
