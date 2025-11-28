@@ -219,7 +219,15 @@ All colors MUST be HSL.
   /* Glass Button */
   .glass-button {
     @apply glass;
-    border: 1px solid hsl(var(--primary) / 0.2);
+    background: hsl(var(--primary) / 0.15);
+    border: 1px solid hsl(var(--primary) / 0.3);
+    color: hsl(var(--primary));
+    font-weight: 500;
+  }
+  
+  .glass-button:hover {
+    background: hsl(var(--primary) / 0.25);
+    border-color: hsl(var(--primary) / 0.5);
   }
 
   /* Glass Empty State */
