@@ -35,39 +35,41 @@ export function TaskCard({ task, progress, totalSteps, completedSteps, onClick }
   const isOverdue = task.due_date && new Date(task.due_date) < new Date() && task.status !== 'completed';
 
   return (
-    <Card className="p-4 cursor-pointer hover:shadow-md transition-shadow" onClick={onClick}>
-      <div className="space-y-3">
+    <Card className="group relative p-3 cursor-pointer hover:shadow-lg transition-all duration-300 overflow-hidden" onClick={onClick}>
+      <div className="space-y-2">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-foreground line-clamp-2 flex-1">{task.name}</h3>
-          <div className="flex gap-1.5 flex-shrink-0">
-            <Badge variant={statusConfig[task.status].variant} className="text-xs">
+          <h3 className="font-semibold text-foreground line-clamp-1 flex-1 text-sm">{task.name}</h3>
+          <div className="flex gap-1 flex-shrink-0">
+            <Badge variant={statusConfig[task.status].variant} className="text-[10px] px-1.5 py-0">
               {statusConfig[task.status].label}
             </Badge>
-            <Badge className={priorityConfig[task.priority].className}>
-              <Flag className="w-3 h-3 mr-1" />
+            <Badge className={`${priorityConfig[task.priority].className} text-[10px] px-1.5 py-0`}>
+              <Flag className="w-2.5 h-2.5 mr-0.5" />
               {priorityConfig[task.priority].label}
             </Badge>
           </div>
         </div>
 
         {task.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2">{task.description}</p>
+          <div className="max-h-0 opacity-0 group-hover:max-h-20 group-hover:opacity-100 transition-all duration-300 overflow-hidden">
+            <p className="text-xs text-muted-foreground line-clamp-3 pt-1">{task.description}</p>
+          </div>
         )}
 
         {task.due_date && (
-          <div className={`flex items-center gap-1.5 text-xs ${isOverdue ? 'text-destructive' : 'text-muted-foreground'}`}>
-            <Calendar className="w-3.5 h-3.5" />
+          <div className={`flex items-center gap-1 text-[10px] ${isOverdue ? 'text-destructive' : 'text-muted-foreground'}`}>
+            <Calendar className="w-3 h-3" />
             <span>{format(new Date(task.due_date), 'MMM dd, yyyy')}</span>
             {isOverdue && <span className="font-medium">(Overdue)</span>}
           </div>
         )}
 
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <div className="space-y-1">
+          <div className="flex items-center justify-between text-[10px] text-muted-foreground">
             <span>Progress</span>
-            <span>{completedSteps} / {totalSteps} steps</span>
+            <span className="font-medium">{completedSteps} / {totalSteps}</span>
           </div>
-          <Progress value={progress} className="h-2" />
+          <Progress value={progress} className="h-1.5" />
         </div>
       </div>
     </Card>
