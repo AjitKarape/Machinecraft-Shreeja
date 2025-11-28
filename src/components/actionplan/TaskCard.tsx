@@ -93,24 +93,29 @@ export function TaskCard({ task, progress, totalSteps, completedSteps, onClick }
       />
 
       <div className="relative p-3">
-        {/* Task Title with Due Date */}
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 className="font-semibold text-foreground line-clamp-2 text-sm leading-tight flex-1">
-            {task.name}
-          </h3>
-          {task.due_date && (
-            <div className={`flex items-center gap-1.5 text-xs flex-shrink-0 ${isOverdue ? 'text-[hsl(var(--priority-high))] font-medium' : 'text-muted-foreground/70'}`}>
-              <Calendar className="w-3 h-3" />
-              <span className="whitespace-nowrap">{getRelativeDate()}</span>
+        <div className="flex items-start justify-between gap-4">
+          {/* Left Side - Title and Steps */}
+          <div className="flex-1 min-w-0 space-y-2">
+            <h3 className="font-semibold text-foreground line-clamp-2 text-sm leading-tight">
+              {task.name}
+            </h3>
+            <div className="text-xs text-muted-foreground">
+              <span className="font-medium">{completedSteps}/{totalSteps} steps</span>
             </div>
-          )}
-        </div>
+          </div>
 
-        {/* Progress Info */}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="font-medium">{completedSteps}/{totalSteps} steps</span>
-          <span>•</span>
-          <span>{Math.round(progress)}% complete</span>
+          {/* Right Side - Due Date and Progress */}
+          <div className="flex flex-col items-start gap-1 flex-shrink-0 text-xs">
+            {task.due_date && (
+              <div className={`flex items-center gap-1.5 ${isOverdue ? 'text-[hsl(var(--priority-high))] font-medium' : 'text-muted-foreground/70'}`}>
+                <Calendar className="w-3 h-3" />
+                <span className="whitespace-nowrap">{getRelativeDate()}</span>
+              </div>
+            )}
+            <div className="text-muted-foreground font-medium">
+              {Math.round(progress)}% complete
+            </div>
+          </div>
         </div>
 
         {/* Description - Hidden, reveals on hover */}
