@@ -1,5 +1,4 @@
 import { Card } from "@/components/ui/card";
-import { CircularProgress } from "@/components/ui/circular-progress";
 import { Calendar, CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { format, formatDistanceToNow, isPast, differenceInDays } from "date-fns";
 
@@ -85,44 +84,43 @@ export function TaskCard({ task, progress, totalSteps, completedSteps, onClick }
         hover:scale-[1.02] hover:-translate-y-0.5`}
       onClick={onClick}
     >
-      <div className="p-3 flex gap-3 items-start">
-        {/* Left Content Area */}
-        <div className="flex-1 min-w-0 space-y-2">
-          {/* Task Title with Due Date */}
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="font-semibold text-foreground line-clamp-2 text-sm leading-tight flex-1">
-              {task.name}
-            </h3>
-            {task.due_date && (
-              <div className={`flex items-center gap-1.5 text-xs flex-shrink-0 ${isOverdue ? 'text-[hsl(var(--priority-high))] font-medium' : 'text-muted-foreground/70'}`}>
-                <Calendar className="w-3 h-3" />
-                <span className="whitespace-nowrap">{getRelativeDate()}</span>
-              </div>
-            )}
-          </div>
+      {/* Progress Background Fill */}
+      <div 
+        className="absolute inset-0 opacity-[0.08] transition-all duration-500"
+        style={{
+          background: `linear-gradient(to right, hsl(var(--priority-${task.priority})) ${progress}%, transparent ${progress}%)`,
+        }}
+      />
 
-          {/* Description - Hidden, reveals on hover */}
-          {task.description && (
-            <div className="max-h-0 opacity-0 group-hover:max-h-24 group-hover:opacity-100 transition-all duration-300 overflow-hidden">
-              <p className="text-xs text-muted-foreground line-clamp-3 pt-1 leading-relaxed">
-                {task.description}
-              </p>
+      <div className="relative p-3">
+        {/* Task Title with Due Date */}
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <h3 className="font-semibold text-foreground line-clamp-2 text-sm leading-tight flex-1">
+            {task.name}
+          </h3>
+          {task.due_date && (
+            <div className={`flex items-center gap-1.5 text-xs flex-shrink-0 ${isOverdue ? 'text-[hsl(var(--priority-high))] font-medium' : 'text-muted-foreground/70'}`}>
+              <Calendar className="w-3 h-3" />
+              <span className="whitespace-nowrap">{getRelativeDate()}</span>
             </div>
           )}
         </div>
 
-        {/* Right Progress Area */}
-        <div className="flex flex-col items-center gap-1 flex-shrink-0">
-          <CircularProgress
-            value={progress}
-            size={56}
-            strokeWidth={4}
-            priority={task.priority}
-          />
-          <span className="text-[10px] text-muted-foreground font-medium">
-            {completedSteps}/{totalSteps}
-          </span>
+        {/* Progress Info */}
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="font-medium">{completedSteps}/{totalSteps} steps</span>
+          <span>•</span>
+          <span>{Math.round(progress)}% complete</span>
         </div>
+
+        {/* Description - Hidden, reveals on hover */}
+        {task.description && (
+          <div className="max-h-0 opacity-0 group-hover:max-h-24 group-hover:opacity-100 transition-all duration-300 overflow-hidden">
+            <p className="text-xs text-muted-foreground line-clamp-3 pt-2 leading-relaxed">
+              {task.description}
+            </p>
+          </div>
+        )}
       </div>
     </Card>
   );
