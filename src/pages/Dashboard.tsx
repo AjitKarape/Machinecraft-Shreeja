@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { NavHeader } from "@/components/NavHeader";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus } from "lucide-react";
+import { Plus, Flag, AlertTriangle, CheckCircle, Sparkles } from "lucide-react";
 import { TaskCard } from "@/components/actionplan/TaskCard";
 import { TaskFormDialog } from "@/components/actionplan/TaskFormDialog";
 import { TaskDetailDialog } from "@/components/actionplan/TaskDetailDialog";
@@ -107,14 +107,17 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-mesh">
       <NavHeader />
       
       <main className="px-3 py-2">
-        <div className="mb-3">
+        <div className="mb-4">
           <div className="flex items-center justify-between mb-3">
             <h1 className="text-foreground text-xl font-medium">Action Plan</h1>
-            <Button onClick={() => setTaskFormOpen(true)}>
+            <Button 
+              onClick={() => setTaskFormOpen(true)}
+              className="glass-button hover:shadow-[0_0_20px_hsl(var(--primary)/0.3)] transition-all duration-300"
+            >
               <Plus className="w-4 h-4 mr-2" />
               New Task
             </Button>
@@ -138,8 +141,16 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* High Priority Column */}
           <div className="space-y-3">
-            <h2 className="text-lg font-semibold text-destructive">High Priority</h2>
-            <div className="space-y-4">
+            <div className="glass-header priority-high flex items-center justify-between p-3 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Flag className="w-4 h-4 text-[hsl(var(--priority-high))]" />
+                <h2 className="text-sm font-semibold text-foreground">High Priority</h2>
+              </div>
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[hsl(var(--priority-high)/0.1)] text-[hsl(var(--priority-high))]">
+                {highPriorityTasks.length}
+              </span>
+            </div>
+            <div className="space-y-3">
               {highPriorityTasks.map((task) => {
                 const count = stepCounts[task.id] || { total_steps: 0, completed_steps: 0 };
                 return (
@@ -157,15 +168,26 @@ export default function Dashboard() {
                 );
               })}
               {highPriorityTasks.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-8">No high priority tasks</p>
+                <div className="glass-empty-state flex flex-col items-center justify-center py-12 rounded-lg">
+                  <Flag className="w-8 h-8 text-muted-foreground/40 mb-2" />
+                  <p className="text-sm text-muted-foreground">No high priority tasks</p>
+                </div>
               )}
             </div>
           </div>
 
           {/* Medium Priority Column */}
           <div className="space-y-3">
-            <h2 className="text-lg font-semibold text-warning">Medium Priority</h2>
-            <div className="space-y-4">
+            <div className="glass-header priority-medium flex items-center justify-between p-3 rounded-lg">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-[hsl(var(--priority-medium))]" />
+                <h2 className="text-sm font-semibold text-foreground">Medium Priority</h2>
+              </div>
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[hsl(var(--priority-medium)/0.1)] text-[hsl(var(--priority-medium))]">
+                {mediumPriorityTasks.length}
+              </span>
+            </div>
+            <div className="space-y-3">
               {mediumPriorityTasks.map((task) => {
                 const count = stepCounts[task.id] || { total_steps: 0, completed_steps: 0 };
                 return (
@@ -183,15 +205,26 @@ export default function Dashboard() {
                 );
               })}
               {mediumPriorityTasks.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-8">No medium priority tasks</p>
+                <div className="glass-empty-state flex flex-col items-center justify-center py-12 rounded-lg">
+                  <AlertTriangle className="w-8 h-8 text-muted-foreground/40 mb-2" />
+                  <p className="text-sm text-muted-foreground">No medium priority tasks</p>
+                </div>
               )}
             </div>
           </div>
 
           {/* Low Priority Column */}
           <div className="space-y-3">
-            <h2 className="text-lg font-semibold text-muted-foreground">Low Priority</h2>
-            <div className="space-y-4">
+            <div className="glass-header priority-low flex items-center justify-between p-3 rounded-lg">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-[hsl(var(--priority-low))]" />
+                <h2 className="text-sm font-semibold text-foreground">Low Priority</h2>
+              </div>
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[hsl(var(--priority-low)/0.1)] text-[hsl(var(--priority-low))]">
+                {lowPriorityTasks.length}
+              </span>
+            </div>
+            <div className="space-y-3">
               {lowPriorityTasks.map((task) => {
                 const count = stepCounts[task.id] || { total_steps: 0, completed_steps: 0 };
                 return (
@@ -209,21 +242,25 @@ export default function Dashboard() {
                 );
               })}
               {lowPriorityTasks.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-8">No low priority tasks</p>
+                <div className="glass-empty-state flex flex-col items-center justify-center py-12 rounded-lg">
+                  <CheckCircle className="w-8 h-8 text-muted-foreground/40 mb-2" />
+                  <p className="text-sm text-muted-foreground">No low priority tasks</p>
+                </div>
               )}
             </div>
           </div>
         </div>
 
         {filteredTasks.length === 0 && (
-          <div className="text-center py-12">
+          <div className="glass-empty-state flex flex-col items-center justify-center py-16 rounded-lg">
+            <Sparkles className="w-12 h-12 text-muted-foreground/40 mb-3" />
             <p className="text-muted-foreground mb-4">
               {filterStatus !== 'all'
                 ? 'No tasks match the current filters'
                 : 'No tasks yet. Create your first task to get started!'}
             </p>
             {filterStatus === 'all' && (
-              <Button onClick={() => setTaskFormOpen(true)}>
+              <Button onClick={() => setTaskFormOpen(true)} className="glass-button">
                 <Plus className="w-4 h-4 mr-2" />
                 Create Task
               </Button>
