@@ -23,6 +23,7 @@ interface DailyNote {
   is_leave: boolean;
   is_historical?: boolean;
   original_notes?: string | null; // Store original notes for historical entries
+  is_pending?: boolean; // Flag for pending entries
 }
 interface ProductionLog {
   id: string;
@@ -189,14 +190,20 @@ export default function DailyLog() {
     setSelectedNote(note);
     setSelectedDate(new Date(note.date));
     
+    // For pending entries, start with empty text
+    if (note.is_pending) {
+      setNoteText("");
+      setIsLeave(false);
+    }
     // For historical notes, use the original notes from the database
-    if (note.is_historical) {
+    else if (note.is_historical) {
       setNoteText(note.original_notes || "");
+      setIsLeave(note.is_leave);
     } else {
       setNoteText(note.notes || "");
+      setIsLeave(note.is_leave);
     }
     
-    setIsLeave(note.is_leave);
     setIsEditDialogOpen(true);
   };
   const handleUpdateNote = async () => {
@@ -205,8 +212,28 @@ export default function DailyLog() {
       return;
     }
 
+    // Check if this is a pending entry (convert to real entry by inserting)
+    if (selectedNote.is_pending && selectedNote.id.startsWith("pending-")) {
+      const { error } = await supabase.from("daily_notes").insert({
+        date: format(selectedDate, "yyyy-MM-dd"),
+        worker_name: "Default",
+        notes: noteText || null,
+        is_leave: isLeave
+      });
+      
+      if (error) {
+        console.error("Error creating note from pending:", error);
+        toast.error("Error creating note");
+      } else {
+        toast.success("Note created successfully");
+        setIsEditDialogOpen(false);
+        resetForm();
+        // Refresh data
+        await fetchNotes();
+      }
+    }
     // Check if this is a historical note (from production_logs)
-    if (selectedNote.is_historical && selectedNote.id.startsWith("historical-")) {
+    else if (selectedNote.is_historical && selectedNote.id.startsWith("historical-")) {
       const realId = selectedNote.id.replace("historical-", "");
       const { error } = await supabase.from("production_logs").update({
         date: format(selectedDate, "yyyy-MM-dd"),
@@ -292,7 +319,47 @@ export default function DailyLog() {
     });
     return [...notes, ...weeklyOffEntries].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   };
-  const filteredNotes = addWeeklyOffEntries(baseFilteredNotes);
+
+  const addPendingEntries = (notes: DailyNote[]) => {
+    if (notes.length === 0) return notes;
+    
+    // Get the date range
+    const allDates = notes.map(note => new Date(note.date));
+    const minDate = new Date(Math.min(...allDates.map(d => d.getTime())));
+    const today = new Date();
+    
+    // Start from 30 days before the earliest entry or from the min date
+    const startDate = new Date(minDate);
+    startDate.setDate(startDate.getDate() - 30);
+    
+    const pendingEntries: DailyNote[] = [];
+    const currentDate = new Date(startDate);
+    
+    while (currentDate <= today) {
+      const dateStr = format(currentDate, "yyyy-MM-dd");
+      const hasEntry = notes.some(note => note.date === dateStr);
+      const isThursdayDate = currentDate.getDay() === 4;
+      
+      // Add pending entry if no existing entry and not Thursday (weekly off day)
+      if (!hasEntry && !isThursdayDate) {
+        pendingEntries.push({
+          id: `pending-${dateStr}`,
+          date: dateStr,
+          worker_name: "Default",
+          notes: null,
+          is_leave: false,
+          is_pending: true
+        });
+      }
+      
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    return [...notes, ...pendingEntries].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  };
+
+  const notesWithWeeklyOff = addWeeklyOffEntries(baseFilteredNotes);
+  const filteredNotes = addPendingEntries(notesWithWeeklyOff);
   return <div className="min-h-screen bg-gradient-mesh">
       <NavHeader />
       
@@ -405,7 +472,7 @@ export default function DailyLog() {
                 </tr>
               </thead>
               <tbody>
-                {filteredNotes.map(note => <tr key={note.id} className={cn("border-b border-border/50 hover:bg-muted/30", (note.is_leave || note.id.startsWith("weekly-off-")) && "bg-muted/20")}>
+                {filteredNotes.map(note => <tr key={note.id} className={cn("border-b border-border/50 hover:bg-muted/30", (note.is_leave || note.id.startsWith("weekly-off-")) && "bg-muted/20", note.is_pending && "bg-amber-50/50 dark:bg-amber-950/20")}>
                     <td className="p-2 text-sm text-foreground">
                       {format(new Date(note.date), "MMM dd, yyyy")}
                     </td>
@@ -413,20 +480,32 @@ export default function DailyLog() {
                       {format(new Date(note.date), "EEEE")}
                     </td>
                     <td className="p-2 text-sm text-foreground">
-                      {note.is_leave ? <span className="text-muted-foreground italic">On Leave</span> : note.notes || "-"}
+                      {note.is_pending ? (
+                        <span className="text-muted-foreground italic">Pending entry</span>
+                      ) : note.is_leave ? (
+                        <span className="text-muted-foreground italic">On Leave</span>
+                      ) : (
+                        note.notes || "-"
+                      )}
                     </td>
                     <td className="p-2">
-                      {!note.id.startsWith("weekly-off-") && <div className="flex justify-center gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => handleViewNote(note)}>
-                            <Eye className="w-4 h-4" />
-                          </Button>
+                      {!note.id.startsWith("weekly-off-") && (
+                        <div className="flex justify-center gap-2">
+                          {!note.is_pending && (
+                            <Button variant="ghost" size="sm" onClick={() => handleViewNote(note)}>
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          )}
                           <Button variant="ghost" size="sm" onClick={() => handleEditNote(note)}>
                             <Pencil className="w-4 h-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleDeleteNote(note.id)}>
-                            <Trash2 className="w-4 h-4 text-destructive" />
-                          </Button>
-                        </div>}
+                          {!note.is_pending && (
+                            <Button variant="ghost" size="sm" onClick={() => handleDeleteNote(note.id)}>
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          )}
+                        </div>
+                      )}
                     </td>
                   </tr>)}
               </tbody>
