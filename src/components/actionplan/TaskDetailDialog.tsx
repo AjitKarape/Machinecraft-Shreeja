@@ -117,10 +117,46 @@ export function TaskDetailDialog({ open, onOpenChange, taskId, onSuccess }: Task
         .eq('id', stepId);
 
       if (error) throw error;
-      loadTaskData();
+      await loadTaskData();
+      await updateTaskStatus();
     } catch (error) {
       console.error('Error updating step:', error);
       toast.error("Failed to update step");
+    }
+  };
+
+  const updateTaskStatus = async () => {
+    if (!taskId) return;
+
+    // Get all top-level steps for this task
+    const { data: allSteps, error: stepsError } = await supabase
+      .from('task_steps')
+      .select('is_completed')
+      .eq('task_id', taskId)
+      .is('parent_step_id', null);
+
+    if (stepsError || !allSteps || allSteps.length === 0) return;
+
+    const completedCount = allSteps.filter(step => step.is_completed).length;
+    const totalCount = allSteps.length;
+
+    let newStatus: 'not_started' | 'in_progress' | 'completed';
+    if (completedCount === 0) {
+      newStatus = 'not_started';
+    } else if (completedCount === totalCount) {
+      newStatus = 'completed';
+    } else {
+      newStatus = 'in_progress';
+    }
+
+    // Update task status
+    const { error: updateError } = await supabase
+      .from('action_tasks')
+      .update({ status: newStatus })
+      .eq('id', taskId);
+
+    if (updateError) {
+      console.error('Failed to update task status:', updateError);
     }
   };
 
@@ -213,19 +249,11 @@ export function TaskDetailDialog({ open, onOpenChange, taskId, onSuccess }: Task
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Status</Label>
-                  <Select
-                    value={task.status}
-                    onValueChange={(v) => handleTaskUpdate({ status: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="not_started">Not Started</SelectItem>
-                      <SelectItem value="in_progress">In Progress</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="px-3 py-2 bg-muted/50 rounded-md border">
+                    <span className="text-sm font-medium capitalize">
+                      {task.status.replace('_', ' ')}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="space-y-2">

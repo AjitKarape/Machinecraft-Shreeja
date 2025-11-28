@@ -22,7 +22,6 @@ interface TaskFormDialogProps {
 export function TaskFormDialog({ open, onOpenChange, onSuccess }: TaskFormDialogProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [status, setStatus] = useState<'not_started' | 'in_progress' | 'completed'>('not_started');
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
   const [dueDate, setDueDate] = useState<Date>();
   const [saving, setSaving] = useState(false);
@@ -45,7 +44,7 @@ export function TaskFormDialog({ open, onOpenChange, onSuccess }: TaskFormDialog
         .insert({
           name: name.trim(),
           description: description.trim() || null,
-          status,
+          status: 'not_started',
           priority,
           due_date: dueDate ? format(dueDate, 'yyyy-MM-dd') : null,
           created_by: user.id
@@ -60,7 +59,6 @@ export function TaskFormDialog({ open, onOpenChange, onSuccess }: TaskFormDialog
       // Reset form
       setName("");
       setDescription("");
-      setStatus('not_started');
       setPriority('medium');
       setDueDate(undefined);
     } catch (error) {
@@ -100,34 +98,18 @@ export function TaskFormDialog({ open, onOpenChange, onSuccess }: TaskFormDialog
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Status</Label>
-              <Select value={status} onValueChange={(v: any) => setStatus(v)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="not_started">Not Started</SelectItem>
-                  <SelectItem value="in_progress">In Progress</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Priority</Label>
-              <Select value={priority} onValueChange={(v: any) => setPriority(v)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-2">
+            <Label>Priority</Label>
+            <Select value={priority} onValueChange={(v: any) => setPriority(v)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
