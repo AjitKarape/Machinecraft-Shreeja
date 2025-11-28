@@ -51,9 +51,14 @@ export default {
   				complete: 'hsl(var(--progress-complete))',
   				background: 'hsl(var(--progress-background))'
   			},
-  			highlight: {
+  		highlight: {
   				DEFAULT: 'hsl(var(--highlight))',
   				foreground: 'hsl(var(--highlight-text))'
+  			},
+  			priority: {
+  				high: 'hsl(var(--priority-high))',
+  				medium: 'hsl(var(--priority-medium))',
+  				low: 'hsl(var(--priority-low))'
   			}
   		},
   		borderRadius: {

@@ -87,6 +87,18 @@ All colors MUST be HSL.
     --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
     --tracking-normal: 0em;
     --spacing: 0.25rem;
+
+    /* Glassmorphism & Neumorphism */
+    --glass-bg: 0 0% 100% / 0.6;
+    --glass-border: 0 0% 100% / 0.2;
+    --glass-blur: 12px;
+    --neu-shadow-light: -4px -4px 8px rgba(255, 255, 255, 0.8);
+    --neu-shadow-dark: 4px 4px 8px rgba(0, 0, 0, 0.08);
+
+    /* Priority Colors */
+    --priority-high: 0 72% 51%;      /* Red */
+    --priority-medium: 38 92% 50%;   /* Amber/Orange */
+    --priority-low: 217 91% 60%;     /* Blue */
   }
 
   .dark {
@@ -143,6 +155,18 @@ All colors MUST be HSL.
     --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
     --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
     --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+
+    /* Glassmorphism & Neumorphism - Dark Mode */
+    --glass-bg: 220 13% 18% / 0.5;
+    --glass-border: 220 13% 91% / 0.1;
+    --glass-blur: 12px;
+    --neu-shadow-light: -4px -4px 8px rgba(255, 255, 255, 0.02);
+    --neu-shadow-dark: 4px 4px 8px rgba(0, 0, 0, 0.3);
+
+    /* Priority Colors - Dark Mode */
+    --priority-high: 0 72% 51%;
+    --priority-medium: 38 92% 50%;
+    --priority-low: 217 91% 60%;
   }
 }
 
@@ -153,5 +177,78 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  /* Glass Effect */
+  .glass {
+    background: hsl(var(--glass-bg));
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid hsl(var(--glass-border));
+  }
+
+  /* Neumorphic Card */
+  .neu-card {
+    background: hsl(var(--card));
+    box-shadow: var(--neu-shadow-light), var(--neu-shadow-dark);
+  }
+
+  /* Glass Headers */
+  .glass-header {
+    @apply glass;
+    background: hsl(var(--glass-bg));
+  }
+
+  .glass-header.priority-high {
+    background: linear-gradient(135deg, hsl(var(--priority-high) / 0.05), hsl(var(--priority-high) / 0.02));
+    border: 1px solid hsl(var(--priority-high) / 0.1);
+  }
+
+  .glass-header.priority-medium {
+    background: linear-gradient(135deg, hsl(var(--priority-medium) / 0.05), hsl(var(--priority-medium) / 0.02));
+    border: 1px solid hsl(var(--priority-medium) / 0.1);
+  }
+
+  .glass-header.priority-low {
+    background: linear-gradient(135deg, hsl(var(--priority-low) / 0.05), hsl(var(--priority-low) / 0.02));
+    border: 1px solid hsl(var(--priority-low) / 0.1);
+  }
+
+  /* Glass Button */
+  .glass-button {
+    @apply glass;
+    border: 1px solid hsl(var(--primary) / 0.2);
+  }
+
+  /* Glass Empty State */
+  .glass-empty-state {
+    @apply glass;
+  }
+
+  /* Background Gradient Mesh */
+  .bg-gradient-mesh {
+    background: 
+      radial-gradient(at 20% 30%, hsl(var(--primary) / 0.03) 0px, transparent 50%),
+      radial-gradient(at 80% 70%, hsl(var(--accent-foreground) / 0.04) 0px, transparent 50%),
+      radial-gradient(at 50% 50%, hsl(var(--secondary) / 0.02) 0px, transparent 50%),
+      hsl(var(--background));
+  }
+
+  /* Fade In Animation */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.4s ease-out;
   }
 }

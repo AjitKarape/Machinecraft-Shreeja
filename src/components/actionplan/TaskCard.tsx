@@ -1,8 +1,7 @@
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Calendar, Flag } from "lucide-react";
-import { format } from "date-fns";
+import { CircularProgress } from "@/components/ui/circular-progress";
+import { Calendar, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { format, formatDistanceToNow, isPast, differenceInDays } from "date-fns";
 
 interface TaskCardProps {
   task: {
@@ -20,56 +19,117 @@ interface TaskCardProps {
 }
 
 const statusConfig = {
-  not_started: { label: 'Not Started', variant: 'secondary' as const },
-  in_progress: { label: 'In Progress', variant: 'default' as const },
-  completed: { label: 'Completed', variant: 'default' as const }
+  not_started: { 
+    label: 'Not Started', 
+    icon: Clock, 
+    color: 'text-muted-foreground' 
+  },
+  in_progress: { 
+    label: 'In Progress', 
+    icon: AlertCircle, 
+    color: 'text-primary' 
+  },
+  completed: { 
+    label: 'Completed', 
+    icon: CheckCircle, 
+    color: 'text-[hsl(var(--priority-low))]' 
+  }
 };
 
 const priorityConfig = {
-  low: { label: 'Low', className: 'bg-muted text-muted-foreground' },
-  medium: { label: 'Medium', className: 'bg-orange-500/10 text-orange-600 dark:text-orange-400' },
-  high: { label: 'High', className: 'bg-destructive/10 text-destructive' }
+  high: { 
+    label: 'High', 
+    borderColor: 'border-l-[hsl(var(--priority-high))]',
+    glowColor: 'shadow-[0_0_12px_hsl(var(--priority-high)/0.4)]'
+  },
+  medium: { 
+    label: 'Medium', 
+    borderColor: 'border-l-[hsl(var(--priority-medium))]',
+    glowColor: 'shadow-[0_0_12px_hsl(var(--priority-medium)/0.3)]'
+  },
+  low: { 
+    label: 'Low', 
+    borderColor: 'border-l-[hsl(var(--priority-low))]',
+    glowColor: 'shadow-[0_0_8px_hsl(var(--priority-low)/0.2)]'
+  }
 };
 
 export function TaskCard({ task, progress, totalSteps, completedSteps, onClick }: TaskCardProps) {
-  const isOverdue = task.due_date && new Date(task.due_date) < new Date() && task.status !== 'completed';
+  const isOverdue = task.due_date && isPast(new Date(task.due_date)) && task.status !== 'completed';
+  const StatusIcon = statusConfig[task.status].icon;
+  
+  const getRelativeDate = () => {
+    if (!task.due_date) return null;
+    const dueDate = new Date(task.due_date);
+    const daysUntil = differenceInDays(dueDate, new Date());
+    
+    if (isOverdue) {
+      return `${Math.abs(daysUntil)} days overdue`;
+    } else if (daysUntil === 0) {
+      return 'Due today';
+    } else if (daysUntil === 1) {
+      return 'Due tomorrow';
+    } else if (daysUntil <= 7) {
+      return `${daysUntil} days left`;
+    } else {
+      return format(dueDate, 'MMM dd, yyyy');
+    }
+  };
 
   return (
-    <Card className="group relative p-3 cursor-pointer hover:shadow-lg transition-all duration-300 overflow-hidden" onClick={onClick}>
-      <div className="space-y-2">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-foreground line-clamp-1 flex-1 text-sm">{task.name}</h3>
-          <div className="flex gap-1 flex-shrink-0">
-            <Badge variant={statusConfig[task.status].variant} className="text-[10px] px-1.5 py-0">
+    <Card 
+      className={`group relative cursor-pointer overflow-hidden border-l-[3px] transition-all duration-300 
+        glass neu-card animate-fade-in
+        ${priorityConfig[task.priority].borderColor}
+        hover:${priorityConfig[task.priority].glowColor}
+        hover:scale-[1.02] hover:-translate-y-0.5`}
+      onClick={onClick}
+    >
+      <div className="p-3 flex gap-3 items-start">
+        {/* Left Content Area */}
+        <div className="flex-1 min-w-0 space-y-2">
+          {/* Task Title */}
+          <h3 className="font-semibold text-foreground line-clamp-2 text-sm leading-tight">
+            {task.name}
+          </h3>
+
+          {/* Status */}
+          <div className="flex items-center gap-1.5">
+            <StatusIcon className={`w-3.5 h-3.5 ${statusConfig[task.status].color}`} />
+            <span className={`text-xs ${statusConfig[task.status].color}`}>
               {statusConfig[task.status].label}
-            </Badge>
-            <Badge className={`${priorityConfig[task.priority].className} text-[10px] px-1.5 py-0`}>
-              <Flag className="w-2.5 h-2.5 mr-0.5" />
-              {priorityConfig[task.priority].label}
-            </Badge>
+            </span>
           </div>
+
+          {/* Due Date */}
+          {task.due_date && (
+            <div className={`flex items-center gap-1.5 text-xs ${isOverdue ? 'text-[hsl(var(--priority-high))] font-medium' : 'text-muted-foreground'}`}>
+              <Calendar className="w-3 h-3" />
+              <span>{getRelativeDate()}</span>
+            </div>
+          )}
+
+          {/* Description - Hidden, reveals on hover */}
+          {task.description && (
+            <div className="max-h-0 opacity-0 group-hover:max-h-24 group-hover:opacity-100 transition-all duration-300 overflow-hidden">
+              <p className="text-xs text-muted-foreground line-clamp-3 pt-1 leading-relaxed">
+                {task.description}
+              </p>
+            </div>
+          )}
         </div>
 
-        {task.description && (
-          <div className="max-h-0 opacity-0 group-hover:max-h-20 group-hover:opacity-100 transition-all duration-300 overflow-hidden">
-            <p className="text-xs text-muted-foreground line-clamp-3 pt-1">{task.description}</p>
-          </div>
-        )}
-
-        {task.due_date && (
-          <div className={`flex items-center gap-1 text-[10px] ${isOverdue ? 'text-destructive' : 'text-muted-foreground'}`}>
-            <Calendar className="w-3 h-3" />
-            <span>{format(new Date(task.due_date), 'MMM dd, yyyy')}</span>
-            {isOverdue && <span className="font-medium">(Overdue)</span>}
-          </div>
-        )}
-
-        <div className="space-y-1">
-          <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-            <span>Progress</span>
-            <span className="font-medium">{completedSteps} / {totalSteps}</span>
-          </div>
-          <Progress value={progress} className="h-1.5" />
+        {/* Right Progress Area */}
+        <div className="flex flex-col items-center gap-1 flex-shrink-0">
+          <CircularProgress
+            value={progress}
+            size={56}
+            strokeWidth={4}
+            priority={task.priority}
+          />
+          <span className="text-[10px] text-muted-foreground font-medium">
+            {completedSteps}/{totalSteps}
+          </span>
         </div>
       </div>
     </Card>
