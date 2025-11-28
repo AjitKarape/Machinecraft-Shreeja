@@ -177,11 +177,11 @@ export function FieldRenderer({ field, onUpdate }: FieldRendererProps) {
         </div>
 
         <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
-          <DialogContent className="max-w-4xl">
+          <DialogContent className="max-w-[90vw] max-h-[90vh] p-6">
             <img
               src={field.image_url || ''}
               alt={field.label}
-              className="w-full h-auto rounded-md"
+              className="max-w-full max-h-[70vh] w-auto h-auto object-contain mx-auto rounded-md"
             />
             <Button
               onClick={handleImageDownload}
