@@ -38,7 +38,7 @@ export const NavHeader = () => {
           
           <NavLink to="/cost-summary" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-accent/50" activeClassName="glass text-accent-foreground shadow-sm">
             <IndianRupee className="w-4 h-4" />
-            Cost Summary
+            Cost
           </NavLink>
           
           <NavLink to="/bank-reco" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-accent/50" activeClassName="glass text-accent-foreground shadow-sm">
