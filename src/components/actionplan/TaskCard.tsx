@@ -89,14 +89,14 @@ export function TaskCard({ task, progress, totalSteps, completedSteps, onClick }
         {/* Left Content Area */}
         <div className="flex-1 min-w-0 space-y-2">
           {/* Task Title with Due Date */}
-          <div className="space-y-1">
-            <h3 className="font-semibold text-foreground line-clamp-2 text-sm leading-tight">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-semibold text-foreground line-clamp-2 text-sm leading-tight flex-1">
               {task.name}
             </h3>
             {task.due_date && (
-              <div className={`flex items-center gap-1.5 text-xs ${isOverdue ? 'text-[hsl(var(--priority-high))] font-medium' : 'text-muted-foreground/70'}`}>
+              <div className={`flex items-center gap-1.5 text-xs flex-shrink-0 ${isOverdue ? 'text-[hsl(var(--priority-high))] font-medium' : 'text-muted-foreground/70'}`}>
                 <Calendar className="w-3 h-3" />
-                <span>{getRelativeDate()}</span>
+                <span className="whitespace-nowrap">{getRelativeDate()}</span>
               </div>
             )}
           </div>
