@@ -48,8 +48,8 @@ export default function Auth() {
     }
     setLoading(false);
   };
-  return <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md p-8">
+  return <div className="min-h-screen bg-gradient-mesh flex items-center justify-center p-4">
+      <Card className="w-full max-w-md p-8 shadow-2xl animate-fade-in">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold mb-2 text-yellow-700">machinecraft.co</h1>
           

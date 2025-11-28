@@ -251,4 +251,41 @@ All colors MUST be HSL.
   .animate-fade-in {
     animation: fade-in 0.4s ease-out;
   }
+
+  /* Additional Utility Classes */
+  .glass-card {
+    @apply glass neu-card;
+  }
+
+  .glass-table {
+    @apply glass rounded-lg overflow-hidden;
+  }
+
+  .glass-input {
+    @apply glass border-border/50 focus:border-primary/50;
+  }
+
+  .glass-tab {
+    @apply glass;
+  }
+
+  .metric-card {
+    @apply glass neu-card hover:shadow-xl transition-all duration-300;
+  }
+
+  /* Stock Level Indicators */
+  .stock-level-good {
+    border-left: 3px solid hsl(var(--priority-low));
+    box-shadow: -2px 0 8px hsl(var(--priority-low) / 0.3);
+  }
+
+  .stock-level-low {
+    border-left: 3px solid hsl(var(--priority-medium));
+    box-shadow: -2px 0 8px hsl(var(--priority-medium) / 0.3);
+  }
+
+  .stock-level-critical {
+    border-left: 3px solid hsl(var(--priority-high));
+    box-shadow: -2px 0 8px hsl(var(--priority-high) / 0.3);
+  }
 }
