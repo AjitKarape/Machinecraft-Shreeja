@@ -106,7 +106,7 @@ export default function StockCount() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-mesh">
       <NavHeader />
       <div className="py-4 px-3">
       {/* Header */}
@@ -117,7 +117,7 @@ export default function StockCount() {
             {toys.length} products · {transactions.filter(t => !t.is_deleted).length} transactions
           </p>
         </div>
-        <Button size="sm" className="h-8" onClick={() => handleOpenDialog()}>
+        <Button size="sm" className="h-8 glass-button hover:shadow-md" onClick={() => handleOpenDialog()}>
           <Plus className="w-4 h-4 mr-1.5" />
           New Transaction
         </Button>

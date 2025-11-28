@@ -13,12 +13,23 @@ interface StockTileProps {
 }
 
 export function StockTile({ toy, onClick }: StockTileProps) {
+  // Determine stock level based on current stock
+  const stockLevel = toy.current_stock <= 5 ? 'critical' : 
+                     toy.current_stock <= 10 ? 'low' : 'good';
+  
   return (
     <Card 
-      className="overflow-hidden hover:shadow-md transition-all cursor-pointer hover:scale-[1.02]" 
+      className="overflow-hidden hover:shadow-lg transition-all cursor-pointer hover:scale-[1.02] relative group animate-fade-in" 
       onClick={onClick}
     >
-      <CardContent className="p-3">
+      {/* Left accent bar */}
+      <div className={`absolute left-0 top-0 bottom-0 w-1 transition-all duration-300 ${
+        stockLevel === 'critical' ? 'bg-priority-high shadow-[0_0_8px_hsl(var(--priority-high)/0.4)]' :
+        stockLevel === 'low' ? 'bg-priority-medium shadow-[0_0_8px_hsl(var(--priority-medium)/0.4)]' :
+        'bg-priority-low shadow-[0_0_8px_hsl(var(--priority-low)/0.4)]'
+      }`} />
+      
+      <CardContent className="p-3 pl-4">
         <div className="flex items-center gap-3">
           {toy.image_url && (
             <div className="w-12 h-12 flex-shrink-0 rounded-md overflow-hidden bg-muted">

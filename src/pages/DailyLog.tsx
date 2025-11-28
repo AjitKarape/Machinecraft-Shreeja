@@ -293,7 +293,7 @@ export default function DailyLog() {
     return [...notes, ...weeklyOffEntries].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   };
   const filteredNotes = addWeeklyOffEntries(baseFilteredNotes);
-  return <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-gradient-mesh">
       <NavHeader />
       
       <main className="px-3 py-3">
@@ -311,7 +311,7 @@ export default function DailyLog() {
               }
             }}>
               <DialogTrigger asChild>
-                <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                <Button size="sm" className="glass-button bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg">
                   <Plus className="w-4 h-4 mr-1.5" />
                   Add Daily Note
                 </Button>
@@ -393,10 +393,10 @@ export default function DailyLog() {
           </div>
         </div>
 
-        <div className="border rounded-lg bg-card">
+        <div className="border rounded-lg glass neu-card">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="border-b bg-muted/50">
+              <thead className="border-b glass bg-muted/30">
                 <tr>
                   <th className="text-left p-2 text-sm font-medium text-foreground">Date</th>
                   <th className="text-left p-2 text-sm font-medium text-foreground">Day</th>

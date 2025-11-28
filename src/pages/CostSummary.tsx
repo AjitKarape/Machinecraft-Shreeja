@@ -302,7 +302,7 @@ export default function CostSummary() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-mesh">
       <NavHeader />
       
       <main className="px-3 py-8">
@@ -329,10 +329,10 @@ export default function CostSummary() {
 
         {/* Summary Tiles */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-6">
-          <Card className="overflow-hidden hover:shadow-md transition-all">
+          <Card className="overflow-hidden hover:shadow-lg transition-all animate-fade-in">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 flex-shrink-0 rounded-md bg-primary/10 flex items-center justify-center">
+                <div className="w-10 h-10 flex-shrink-0 rounded-md bg-primary/10 flex items-center justify-center shadow-sm">
                   <TrendingUp className="w-5 h-5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -349,10 +349,10 @@ export default function CostSummary() {
             </CardContent>
           </Card>
 
-          <Card className="overflow-hidden hover:shadow-md transition-all">
+          <Card className="overflow-hidden hover:shadow-lg transition-all animate-fade-in">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 flex-shrink-0 rounded-md bg-primary/10 flex items-center justify-center">
+                <div className="w-10 h-10 flex-shrink-0 rounded-md bg-primary/10 flex items-center justify-center shadow-sm">
                   <IndianRupee className="w-5 h-5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -369,10 +369,10 @@ export default function CostSummary() {
             </CardContent>
           </Card>
 
-          <Card className="overflow-hidden hover:shadow-md transition-all">
+          <Card className="overflow-hidden hover:shadow-lg transition-all animate-fade-in">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 flex-shrink-0 rounded-md bg-primary/10 flex items-center justify-center">
+                <div className="w-10 h-10 flex-shrink-0 rounded-md bg-primary/10 flex items-center justify-center shadow-sm">
                   <IndianRupee className="w-5 h-5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -389,10 +389,10 @@ export default function CostSummary() {
             </CardContent>
           </Card>
 
-          <Card className="overflow-hidden hover:shadow-md transition-all">
+          <Card className="overflow-hidden hover:shadow-lg transition-all animate-fade-in">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 flex-shrink-0 rounded-md bg-primary/10 flex items-center justify-center">
+                <div className="w-10 h-10 flex-shrink-0 rounded-md bg-primary/10 flex items-center justify-center shadow-sm">
                   <IndianRupee className="w-5 h-5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -417,7 +417,7 @@ export default function CostSummary() {
           <h2 className="text-xl font-bold text-foreground mb-4">
             Profit & Loss Statement (Apr - Mar)
           </h2>
-          <div className="overflow-x-auto border rounded-md">
+          <div className="overflow-x-auto border rounded-md glass neu-card">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted hover:bg-muted">

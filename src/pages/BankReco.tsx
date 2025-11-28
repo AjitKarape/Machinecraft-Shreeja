@@ -768,7 +768,7 @@ export default function BankReco() {
     doc.save(fileName);
     toast.success("PDF file downloaded successfully");
   };
-  return <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-gradient-mesh">
       <NavHeader />
       
       <main className="px-3 py-2">
@@ -778,7 +778,7 @@ export default function BankReco() {
 
         <div className="space-y-3">
           {/* Bank Accounts Management Section */}
-          <div className="space-y-3">
+          <div className="glass neu-card p-4 rounded-lg space-y-3">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold text-foreground">Bank Accounts</h3>
               <Dialog open={isAddBankOpen} onOpenChange={setIsAddBankOpen}>
@@ -864,11 +864,11 @@ export default function BankReco() {
             <div className="flex items-center gap-4">
               <h2 className="text-xl font-semibold text-foreground">Transactions</h2>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={handleDownloadExcel}>
+                <Button size="sm" variant="outline" onClick={handleDownloadExcel} className="glass-button">
                   <Download className="w-4 h-4 mr-1.5" />
                   Excel
                 </Button>
-                <Button size="sm" variant="outline" onClick={handleDownloadPDF}>
+                <Button size="sm" variant="outline" onClick={handleDownloadPDF} className="glass-button">
                   <Download className="w-4 h-4 mr-1.5" />
                   PDF
                 </Button>

@@ -16,37 +16,37 @@ export const NavHeader = () => {
       navigate("/auth");
     }
   };
-  return <header className="bg-background border-b border-border px-3 py-2">
+  return <header className="glass-header sticky top-0 z-50 border-b border-border/50 px-3 py-2 backdrop-blur-md">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-yellow-800">machinecraft.co</h1>
         
         <nav className="flex items-center gap-1">
-          <NavLink to="/dashboard" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-colors hover:text-foreground" activeClassName="bg-accent text-accent-foreground">
+          <NavLink to="/dashboard" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-accent/50" activeClassName="glass text-accent-foreground shadow-sm">
             <LayoutDashboard className="w-4 h-4" />
             Action Plan
           </NavLink>
           
-          <NavLink to="/daily-log" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-colors hover:text-foreground" activeClassName="bg-accent text-accent-foreground">
+          <NavLink to="/daily-log" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-accent/50" activeClassName="glass text-accent-foreground shadow-sm">
             <ClipboardList className="w-4 h-4" />
             Daily Log
           </NavLink>
           
-          <NavLink to="/stock-count" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-colors hover:text-foreground" activeClassName="bg-accent text-accent-foreground">
+          <NavLink to="/stock-count" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-accent/50" activeClassName="glass text-accent-foreground shadow-sm">
             <Package className="w-4 h-4" />
             Stock
           </NavLink>
           
-          <NavLink to="/cost-summary" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-colors hover:text-foreground" activeClassName="bg-accent text-accent-foreground">
+          <NavLink to="/cost-summary" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-accent/50" activeClassName="glass text-accent-foreground shadow-sm">
             <IndianRupee className="w-4 h-4" />
             Cost Summary
           </NavLink>
           
-          <NavLink to="/bank-reco" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-colors hover:text-foreground" activeClassName="bg-accent text-accent-foreground">
+          <NavLink to="/bank-reco" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-accent/50" activeClassName="glass text-accent-foreground shadow-sm">
             <ClipboardList className="w-4 h-4" />
             Bank Reco
           </NavLink>
           
-          <NavLink to="/settings" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-colors hover:text-foreground" activeClassName="bg-accent text-accent-foreground">
+          <NavLink to="/settings" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-accent/50" activeClassName="glass text-accent-foreground shadow-sm">
             <Settings className="w-4 h-4" />
             Settings
           </NavLink>

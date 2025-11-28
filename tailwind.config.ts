@@ -82,11 +82,30 @@ export default {
   				to: {
   					height: '0'
   				}
+  			},
+  			'glow-pulse': {
+  				'0%, 100%': {
+  					opacity: '1'
+  				},
+  				'50%': {
+  					opacity: '0.7'
+  				}
+  			},
+  			'glass-shimmer': {
+  				'0%': {
+  					backgroundPosition: '-200% 0'
+  				},
+  				'100%': {
+  					backgroundPosition: '200% 0'
+  				}
   			}
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
+  			'accordion-up': 'accordion-up 0.2s ease-out',
+  			'stagger-fade-in': 'fade-in 0.5s ease-out',
+  			'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
+  			'glass-shimmer': 'glass-shimmer 2s ease-in-out infinite'
   		},
   		fontFamily: {
   			sans: [

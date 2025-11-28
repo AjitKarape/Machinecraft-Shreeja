@@ -482,7 +482,7 @@ export default function Settings() {
     }
   };
 
-  return <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-gradient-mesh">
       <NavHeader />
       
       <main className="px-3 py-3">
@@ -492,7 +492,7 @@ export default function Settings() {
         </div>
 
         <Tabs defaultValue="toys" className="space-y-4">
-          <TabsList className="bg-muted text-sm">
+          <TabsList className="glass neu-card text-sm">
             <TabsTrigger value="toys" className="text-xs">Toys</TabsTrigger>
             <TabsTrigger value="expense-mapping" className="text-xs">Expense Mapping</TabsTrigger>
             <TabsTrigger value="users" className="text-xs">User Management</TabsTrigger>
