@@ -28,7 +28,7 @@ export const NavHeader = () => {
           
           <NavLink to="/daily-log" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-accent/50" activeClassName="glass text-accent-foreground shadow-sm">
             <ClipboardList className="w-4 h-4" />
-            Daily Log
+            Logs
           </NavLink>
           
           <NavLink to="/stock-count" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-accent/50" activeClassName="glass text-accent-foreground shadow-sm">
