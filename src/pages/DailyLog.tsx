@@ -323,17 +323,12 @@ export default function DailyLog() {
   const addPendingEntries = (notes: DailyNote[]) => {
     if (notes.length === 0) return notes;
     
-    // Get the date range
-    const allDates = notes.map(note => new Date(note.date));
-    const minDate = new Date(Math.min(...allDates.map(d => d.getTime())));
+    // Only show pending entries from Nov 15, 2025 onwards
+    const cutoffDate = new Date("2025-11-15");
     const today = new Date();
     
-    // Start from 30 days before the earliest entry or from the min date
-    const startDate = new Date(minDate);
-    startDate.setDate(startDate.getDate() - 30);
-    
     const pendingEntries: DailyNote[] = [];
-    const currentDate = new Date(startDate);
+    const currentDate = new Date(cutoffDate);
     
     while (currentDate <= today) {
       const dateStr = format(currentDate, "yyyy-MM-dd");
