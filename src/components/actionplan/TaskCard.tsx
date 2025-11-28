@@ -88,26 +88,18 @@ export function TaskCard({ task, progress, totalSteps, completedSteps, onClick }
       <div className="p-3 flex gap-3 items-start">
         {/* Left Content Area */}
         <div className="flex-1 min-w-0 space-y-2">
-          {/* Task Title */}
-          <h3 className="font-semibold text-foreground line-clamp-2 text-sm leading-tight">
-            {task.name}
-          </h3>
-
-          {/* Status */}
-          <div className="flex items-center gap-1.5">
-            <StatusIcon className={`w-3.5 h-3.5 ${statusConfig[task.status].color}`} />
-            <span className={`text-xs ${statusConfig[task.status].color}`}>
-              {statusConfig[task.status].label}
-            </span>
+          {/* Task Title with Due Date */}
+          <div className="space-y-1">
+            <h3 className="font-semibold text-foreground line-clamp-2 text-sm leading-tight">
+              {task.name}
+            </h3>
+            {task.due_date && (
+              <div className={`flex items-center gap-1.5 text-xs ${isOverdue ? 'text-[hsl(var(--priority-high))] font-medium' : 'text-muted-foreground/70'}`}>
+                <Calendar className="w-3 h-3" />
+                <span>{getRelativeDate()}</span>
+              </div>
+            )}
           </div>
-
-          {/* Due Date */}
-          {task.due_date && (
-            <div className={`flex items-center gap-1.5 text-xs ${isOverdue ? 'text-[hsl(var(--priority-high))] font-medium' : 'text-muted-foreground'}`}>
-              <Calendar className="w-3 h-3" />
-              <span>{getRelativeDate()}</span>
-            </div>
-          )}
 
           {/* Description - Hidden, reveals on hover */}
           {task.description && (
