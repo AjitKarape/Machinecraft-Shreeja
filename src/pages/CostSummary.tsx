@@ -289,9 +289,7 @@ export default function CostSummary() {
           <Card className="overflow-hidden hover:shadow-lg transition-all animate-fade-in">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 flex-shrink-0 rounded-md bg-primary/10 flex items-center justify-center shadow-sm">
-                  <TrendingUp className="w-5 h-5 text-primary" />
-                </div>
+                
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-xs text-muted-foreground mb-1 truncate">
                     Gross Profit
