@@ -36,10 +36,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchTasks();
-    subscribeToChanges();
-  }, []);
 
-  const subscribeToChanges = () => {
     const tasksChannel = supabase
       .channel('action-tasks-changes')
       .on('postgres_changes', {
@@ -62,7 +59,7 @@ export default function Dashboard() {
       supabase.removeChannel(tasksChannel);
       supabase.removeChannel(stepsChannel);
     };
-  };
+  }, []);
 
   const fetchTasks = async () => {
     const { data: tasksData } = await supabase
