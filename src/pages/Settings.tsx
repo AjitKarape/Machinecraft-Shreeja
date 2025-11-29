@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { NavHeader } from "@/components/NavHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
@@ -471,8 +470,6 @@ export default function Settings() {
   };
 
   return <div className="min-h-screen bg-gradient-mesh">
-      <NavHeader />
-      
       <main className="px-3 py-3">
         <div className="mb-4">
           <h1 className="text-foreground mb-1 text-xl font-medium">Settings</h1>

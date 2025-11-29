@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { NavHeader } from "@/components/NavHeader";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Flag, AlertTriangle, CheckCircle, Sparkles } from "lucide-react";
@@ -108,8 +107,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-mesh">
-      <NavHeader />
-      
       <main className="px-3 py-2">
         <div className="mb-4">
           <div className="flex items-center justify-between mb-3">
