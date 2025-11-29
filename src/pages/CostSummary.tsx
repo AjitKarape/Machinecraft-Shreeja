@@ -220,8 +220,14 @@ export default function CostSummary() {
   const today = new Date();
   const fundingMapping = expenseMappings.find(m => normalizeHead(m.expense_head) === "Funding");
   
+  console.log("Today:", today);
   console.log("Funding Mapping:", fundingMapping);
-  console.log("Funding transactions:", bankTransactions.filter(txn => normalizeHead(txn.expense_head) === "Funding"));
+  if (fundingMapping) {
+    console.log("Opening Balance:", fundingMapping.opening_balance);
+    console.log("Opening Balance Date:", fundingMapping.opening_balance_date);
+    console.log("Opening Balance Date as Date:", new Date(fundingMapping.opening_balance_date));
+    console.log("Is opening balance date <= today?", fundingMapping.opening_balance_date ? new Date(fundingMapping.opening_balance_date) <= today : "no date");
+  }
   
   const fundingOpeningBalance = fundingMapping && fundingMapping.opening_balance && 
     fundingMapping.opening_balance_date && 
