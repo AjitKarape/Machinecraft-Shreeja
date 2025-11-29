@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
@@ -67,12 +67,21 @@ const RoleProtectedRoute = ({
 }) => {
   const { roles, isLoading } = useUserRole();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     if (!isLoading) {
       const hasAccess = roles.some(role => allowedRoles.includes(role));
       
+      console.log("[RoleProtectedRoute]", {
+        path: location.pathname,
+        userRoles: roles,
+        allowedRoles,
+        hasAccess
+      });
+      
       if (!hasAccess) {
+        console.log("[RoleProtectedRoute] Access denied, redirecting...");
         // Workers get redirected to their only accessible page
         if (roles.includes("worker")) {
           navigate("/daily-log", { replace: true });
@@ -81,7 +90,7 @@ const RoleProtectedRoute = ({
         }
       }
     }
-  }, [isLoading, roles, allowedRoles, navigate]);
+  }, [isLoading, roles, allowedRoles, navigate, location.pathname]);
 
   if (isLoading) {
     return (
@@ -92,7 +101,13 @@ const RoleProtectedRoute = ({
   }
 
   const hasAccess = roles.some(role => allowedRoles.includes(role));
-  return hasAccess ? <>{children}</> : null;
+  
+  if (!hasAccess) {
+    console.log("[RoleProtectedRoute] Blocking render - no access");
+    return null;
+  }
+  
+  return <>{children}</>;
 };
 
 const App = () => (
