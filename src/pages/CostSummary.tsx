@@ -216,35 +216,6 @@ export default function CostSummary() {
   const totalYearOutflow = fyMonths.reduce((sum, month) => sum + getOutflowTotal(month), 0);
   const netCashFlow = totalYearInflow - totalYearOutflow;
 
-  // Calculate total funding as on date (cumulative up to current date, across all time)
-  const today = new Date();
-  const fundingMapping = expenseMappings.find(m => normalizeHead(m.expense_head) === "Funding");
-  
-  console.log("Today:", today);
-  console.log("Funding Mapping:", fundingMapping);
-  if (fundingMapping) {
-    console.log("Opening Balance:", fundingMapping.opening_balance);
-    console.log("Opening Balance Date:", fundingMapping.opening_balance_date);
-    console.log("Opening Balance Date as Date:", new Date(fundingMapping.opening_balance_date));
-    console.log("Is opening balance date <= today?", fundingMapping.opening_balance_date ? new Date(fundingMapping.opening_balance_date) <= today : "no date");
-  }
-  
-  const fundingOpeningBalance = fundingMapping && fundingMapping.opening_balance && 
-    fundingMapping.opening_balance_date && 
-    new Date(fundingMapping.opening_balance_date) <= today 
-    ? fundingMapping.opening_balance 
-    : 0;
-  
-  const fundingTransactionsSum = bankTransactions
-    .filter(txn => normalizeHead(txn.expense_head) === "Funding" && new Date(txn.date) <= today)
-    .reduce((sum, txn) => sum + txn.amount, 0);
-    
-  const totalFunding = fundingTransactionsSum + fundingOpeningBalance;
-  
-  console.log("Funding Opening Balance:", fundingOpeningBalance);
-  console.log("Funding Transactions Sum:", fundingTransactionsSum);
-  console.log("Total Funding:", totalFunding);
-
   const availableYears = Array.from(new Set([...bankTransactions.map(t => {
     const date = new Date(t.date);
     const month = date.getMonth();
@@ -274,7 +245,7 @@ export default function CostSummary() {
           <div>
             <h1 className="text-2xl font-bold text-foreground">Cash Flow Statement</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              4 metrics · FY {selectedFinancialYear}-{String(selectedFinancialYear + 1).slice(2)}
+              3 metrics · FY {selectedFinancialYear}-{String(selectedFinancialYear + 1).slice(2)}
             </p>
           </div>
           <select className="border rounded px-3 py-2 text-sm bg-background" value={selectedFinancialYear} onChange={e => setSelectedFinancialYear(Number(e.target.value))}>
@@ -285,7 +256,7 @@ export default function CostSummary() {
         </div>
 
         {/* Summary Tiles */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
           <Card className="overflow-hidden hover:shadow-lg transition-all animate-fade-in">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -334,25 +305,6 @@ export default function CostSummary() {
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-2xl font-bold text-destructive leading-none">
                       ₹{totalYearOutflow.toLocaleString('en-IN', {
-                      maximumFractionDigits: 0
-                    })}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="overflow-hidden hover:shadow-lg transition-all animate-fade-in">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-xs text-muted-foreground mb-1 truncate">
-                    Total Funding
-                  </h3>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl font-bold text-accent leading-none">
-                      ₹{totalFunding.toLocaleString('en-IN', {
                       maximumFractionDigits: 0
                     })}
                     </span>
