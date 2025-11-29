@@ -207,6 +207,7 @@ export type Database = {
           id: string
           is_revenue: boolean
           opening_balance: number | null
+          opening_balance_date: string | null
           updated_at: string
         }
         Insert: {
@@ -216,6 +217,7 @@ export type Database = {
           id?: string
           is_revenue?: boolean
           opening_balance?: number | null
+          opening_balance_date?: string | null
           updated_at?: string
         }
         Update: {
@@ -225,6 +227,7 @@ export type Database = {
           id?: string
           is_revenue?: boolean
           opening_balance?: number | null
+          opening_balance_date?: string | null
           updated_at?: string
         }
         Relationships: []
