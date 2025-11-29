@@ -166,7 +166,7 @@ export default function CostSummary() {
   const aggregatedData = aggregateTransactionsByMonth();
 
   // Define Cash Flow groups - simplified, use group names for classification
-  const inflowGroupNames = ["Revenue", "Receipts"];
+  const inflowGroupNames = ["Revenue", "Receipts", "Funding"];
   
   const inflowHeads = expenseMappings.filter(m => 
     inflowGroupNames.includes(m.group_name)

@@ -627,6 +627,7 @@ export default function Settings() {
                             <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Inflow</div>
                             <SelectItem value="Revenue">Revenue</SelectItem>
                             <SelectItem value="Receipts">Receipts</SelectItem>
+                            <SelectItem value="Funding">Funding</SelectItem>
                             <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1">Outflow</div>
                             <SelectItem value="Direct Expenses">Direct Expenses</SelectItem>
                             <SelectItem value="Operating Cost">Operating Cost</SelectItem>
@@ -634,7 +635,7 @@ export default function Settings() {
                             <SelectItem value="Investment">Investment</SelectItem>
                           </SelectContent>
                         </Select>
-                        <p className="text-xs text-muted-foreground">Inflow: Revenue, Receipts | Outflow: All others</p>
+                        <p className="text-xs text-muted-foreground">Inflow: Revenue, Receipts, Funding | Outflow: All others</p>
                       </div>
                       <div className="grid gap-2">
                         <Label>Opening Balance</Label>
@@ -695,6 +696,7 @@ export default function Settings() {
                             <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Inflow</div>
                             <SelectItem value="Revenue">Revenue</SelectItem>
                             <SelectItem value="Receipts">Receipts</SelectItem>
+                            <SelectItem value="Funding">Funding</SelectItem>
                             <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1">Outflow</div>
                             <SelectItem value="Direct Expenses">Direct Expenses</SelectItem>
                             <SelectItem value="Operating Cost">Operating Cost</SelectItem>
@@ -702,7 +704,7 @@ export default function Settings() {
                             <SelectItem value="Investment">Investment</SelectItem>
                           </SelectContent>
                         </Select>
-                        <p className="text-xs text-muted-foreground">Inflow: Revenue, Receipts | Outflow: All others</p>
+                        <p className="text-xs text-muted-foreground">Inflow: Revenue, Receipts, Funding | Outflow: All others</p>
                       </div>
                       <div className="grid gap-2">
                         <Label>Opening Balance</Label>
