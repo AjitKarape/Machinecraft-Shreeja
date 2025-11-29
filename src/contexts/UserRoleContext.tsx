@@ -25,10 +25,13 @@ export const UserRoleProvider = ({ children }: { children: ReactNode }) => {
         const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) {
+          console.log("[UserRole] No user found");
           setRoles([]);
           setIsLoading(false);
           return;
         }
+
+        console.log("[UserRole] Fetching roles for user:", user.email, user.id);
 
         const { data, error } = await supabase
           .from("user_roles")
@@ -36,13 +39,15 @@ export const UserRoleProvider = ({ children }: { children: ReactNode }) => {
           .eq("user_id", user.id);
 
         if (error) {
-          console.error("Error fetching user roles:", error);
+          console.error("[UserRole] Error fetching user roles:", error);
           setRoles([]);
         } else {
-          setRoles(data?.map(r => r.role) || []);
+          const userRoles = data?.map(r => r.role) || [];
+          console.log("[UserRole] Loaded roles:", userRoles);
+          setRoles(userRoles);
         }
       } catch (error) {
-        console.error("Error in fetchUserRoles:", error);
+        console.error("[UserRole] Error in fetchUserRoles:", error);
         setRoles([]);
       } finally {
         setIsLoading(false);
