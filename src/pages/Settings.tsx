@@ -619,8 +619,22 @@ export default function Settings() {
                       </div>
                       <div className="grid gap-2">
                         <Label>Group</Label>
-                        <Input value={newGroup} onChange={e => setNewGroup(e.target.value)} placeholder="e.g., Revenue, Receipts, Direct Expenses, Operating Cost" />
-                        <p className="text-xs text-muted-foreground">Use "Revenue" or "Receipts" for inflow items</p>
+                        <Select value={newGroup} onValueChange={setNewGroup}>
+                          <SelectTrigger className="bg-background">
+                            <SelectValue placeholder="Select a group" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-background z-50">
+                            <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Inflow</div>
+                            <SelectItem value="Revenue">Revenue</SelectItem>
+                            <SelectItem value="Receipts">Receipts</SelectItem>
+                            <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1">Outflow</div>
+                            <SelectItem value="Direct Expenses">Direct Expenses</SelectItem>
+                            <SelectItem value="Operating Cost">Operating Cost</SelectItem>
+                            <SelectItem value="Assets">Assets</SelectItem>
+                            <SelectItem value="Investment">Investment</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">Inflow: Revenue, Receipts | Outflow: All others</p>
                       </div>
                       <div className="grid gap-2">
                         <Label>Opening Balance</Label>
@@ -673,8 +687,22 @@ export default function Settings() {
                       </div>
                       <div className="grid gap-2">
                         <Label>Group</Label>
-                        <Input value={newGroup} onChange={e => setNewGroup(e.target.value)} placeholder="e.g., Revenue, Receipts, Direct Expenses, Operating Cost" />
-                        <p className="text-xs text-muted-foreground">Use "Revenue" or "Receipts" for inflow items</p>
+                        <Select value={newGroup} onValueChange={setNewGroup}>
+                          <SelectTrigger className="bg-background">
+                            <SelectValue placeholder="Select a group" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-background z-50">
+                            <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Inflow</div>
+                            <SelectItem value="Revenue">Revenue</SelectItem>
+                            <SelectItem value="Receipts">Receipts</SelectItem>
+                            <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1">Outflow</div>
+                            <SelectItem value="Direct Expenses">Direct Expenses</SelectItem>
+                            <SelectItem value="Operating Cost">Operating Cost</SelectItem>
+                            <SelectItem value="Assets">Assets</SelectItem>
+                            <SelectItem value="Investment">Investment</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">Inflow: Revenue, Receipts | Outflow: All others</p>
                       </div>
                       <div className="grid gap-2">
                         <Label>Opening Balance</Label>
