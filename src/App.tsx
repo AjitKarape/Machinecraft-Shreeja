@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { DataProvider } from "@/contexts/DataContext";
-import { useUserRole } from "@/hooks/useUserRole";
+import { UserRoleProvider, useUserRole } from "@/contexts/UserRoleContext";
 import type { Database } from "@/integrations/supabase/types";
 import { NavHeader } from "@/components/NavHeader";
 import Dashboard from "./pages/Dashboard";
@@ -67,10 +67,9 @@ const RoleProtectedRoute = ({
 }) => {
   const { roles, isLoading } = useUserRole();
   const navigate = useNavigate();
-  const [hasChecked, setHasChecked] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && !hasChecked) {
+    if (!isLoading) {
       const hasAccess = roles.some(role => allowedRoles.includes(role));
       
       if (!hasAccess) {
@@ -81,11 +80,10 @@ const RoleProtectedRoute = ({
           navigate("/dashboard", { replace: true });
         }
       }
-      setHasChecked(true);
     }
-  }, [isLoading, roles, allowedRoles, navigate, hasChecked]);
+  }, [isLoading, roles, allowedRoles, navigate]);
 
-  if (isLoading || !hasChecked) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="text-muted-foreground">Loading...</p>
@@ -100,10 +98,11 @@ const RoleProtectedRoute = ({
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <DataProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+      <UserRoleProvider>
+        <DataProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route
@@ -183,7 +182,8 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
-      </DataProvider>
+        </DataProvider>
+      </UserRoleProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

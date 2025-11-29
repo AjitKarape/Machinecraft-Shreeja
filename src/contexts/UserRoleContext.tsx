@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
-interface UserRoleData {
+interface UserRoleContextType {
   roles: AppRole[];
   isLoading: boolean;
   isAdmin: boolean;
@@ -13,7 +13,9 @@ interface UserRoleData {
   hasRole: (role: AppRole) => boolean;
 }
 
-export const useUserRole = (): UserRoleData => {
+const UserRoleContext = createContext<UserRoleContextType | undefined>(undefined);
+
+export const UserRoleProvider = ({ children }: { children: ReactNode }) => {
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -74,12 +76,26 @@ export const useUserRole = (): UserRoleData => {
     return roles.includes(role);
   };
 
-  return {
-    roles,
-    isLoading,
-    isAdmin: hasRole("admin"),
-    isWorker: hasRole("worker"),
-    isEditor: hasRole("editor"),
-    hasRole,
-  };
+  return (
+    <UserRoleContext.Provider
+      value={{
+        roles,
+        isLoading,
+        isAdmin: hasRole("admin"),
+        isWorker: hasRole("worker"),
+        isEditor: hasRole("editor"),
+        hasRole,
+      }}
+    >
+      {children}
+    </UserRoleContext.Provider>
+  );
+};
+
+export const useUserRole = (): UserRoleContextType => {
+  const context = useContext(UserRoleContext);
+  if (context === undefined) {
+    throw new Error("useUserRole must be used within a UserRoleProvider");
+  }
+  return context;
 };

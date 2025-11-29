@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import { useUserRole } from "@/hooks/useUserRole";
+import { useUserRole } from "@/contexts/UserRoleContext";
 
 export default function Index() {
   const { isWorker, isLoading } = useUserRole();
