@@ -168,18 +168,11 @@ export default function CostSummary() {
 
   // Define Cash Flow groups - simplified, use group names for classification
   const inflowGroupNames = ["Revenue", "Receipts", "Funding"];
-  
-  const inflowHeads = expenseMappings.filter(m => 
-    inflowGroupNames.includes(m.group_name)
-  ).map(m => normalizeHead(m.expense_head));
-  
-  const outflowHeads = expenseMappings.filter(m => 
-    !inflowGroupNames.includes(m.group_name)
-  ).map(m => normalizeHead(m.expense_head));
+  const inflowHeads = expenseMappings.filter(m => inflowGroupNames.includes(m.group_name)).map(m => normalizeHead(m.expense_head));
+  const outflowHeads = expenseMappings.filter(m => !inflowGroupNames.includes(m.group_name)).map(m => normalizeHead(m.expense_head));
   // Find unmapped expense heads
   const allExpenseHeads = Array.from(new Set(bankTransactions.map(t => normalizeHead(t.expense_head)).filter(Boolean))) as string[];
   const unmappedExpenses = allExpenseHeads.filter(head => !inflowHeads.includes(head) && !outflowHeads.includes(head));
-  
   const getAmountForMonth = (expenseHead: string, month: string) => {
     const item = aggregatedData.find(a => a.expense_head === expenseHead && a.month === month);
     let amount = item ? item.amount : 0;
@@ -190,10 +183,8 @@ export default function CostSummary() {
       const mapping = expenseMappings.find(m => normalizeHead(m.expense_head) === expenseHead);
       if (mapping && mapping.opening_balance && mapping.opening_balance_date) {
         const openingBalanceDate = new Date(mapping.opening_balance_date);
-        const openingBalanceYear = openingBalanceDate.getMonth() >= 3 
-          ? openingBalanceDate.getFullYear() 
-          : openingBalanceDate.getFullYear() - 1;
-        
+        const openingBalanceYear = openingBalanceDate.getMonth() >= 3 ? openingBalanceDate.getFullYear() : openingBalanceDate.getFullYear() - 1;
+
         // Only add opening balance if it matches the selected financial year
         if (openingBalanceYear === selectedFinancialYear) {
           amount += mapping.opening_balance;
@@ -202,11 +193,9 @@ export default function CostSummary() {
     }
     return amount;
   };
-
   const getInflowTotal = (month: string) => {
     return inflowHeads.reduce((sum, head) => sum + getAmountForMonth(head, month), 0);
   };
-
   const getOutflowTotal = (month: string) => {
     return outflowHeads.reduce((sum, head) => sum + Math.abs(getAmountForMonth(head, month)), 0);
   };
@@ -219,7 +208,6 @@ export default function CostSummary() {
   // Calculate total funding as on date (cumulative up to current date, across all time)
   const today = new Date();
   const fundingMapping = expenseMappings.find(m => normalizeHead(m.expense_head) === "Funding");
-  
   console.log("Today:", today);
   console.log("Funding Mapping:", fundingMapping);
   if (fundingMapping) {
@@ -228,23 +216,12 @@ export default function CostSummary() {
     console.log("Opening Balance Date as Date:", new Date(fundingMapping.opening_balance_date));
     console.log("Is opening balance date <= today?", fundingMapping.opening_balance_date ? new Date(fundingMapping.opening_balance_date) <= today : "no date");
   }
-  
-  const fundingOpeningBalance = fundingMapping && fundingMapping.opening_balance && 
-    fundingMapping.opening_balance_date && 
-    new Date(fundingMapping.opening_balance_date) <= today 
-    ? fundingMapping.opening_balance 
-    : 0;
-  
-  const fundingTransactionsSum = bankTransactions
-    .filter(txn => normalizeHead(txn.expense_head) === "Funding" && new Date(txn.date) <= today)
-    .reduce((sum, txn) => sum + txn.amount, 0);
-    
+  const fundingOpeningBalance = fundingMapping && fundingMapping.opening_balance && fundingMapping.opening_balance_date && new Date(fundingMapping.opening_balance_date) <= today ? fundingMapping.opening_balance : 0;
+  const fundingTransactionsSum = bankTransactions.filter(txn => normalizeHead(txn.expense_head) === "Funding" && new Date(txn.date) <= today).reduce((sum, txn) => sum + txn.amount, 0);
   const totalFunding = fundingTransactionsSum + fundingOpeningBalance;
-  
   console.log("Funding Opening Balance:", fundingOpeningBalance);
   console.log("Funding Transactions Sum:", fundingTransactionsSum);
   console.log("Total Funding:", totalFunding);
-
   const availableYears = Array.from(new Set([...bankTransactions.map(t => {
     const date = new Date(t.date);
     const month = date.getMonth();
@@ -351,7 +328,7 @@ export default function CostSummary() {
                     Total Funding
                   </h3>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl font-bold text-accent leading-none">
+                    <span className="text-2xl font-bold leading-none text-muted-foreground">
                       ₹{totalFunding.toLocaleString('en-IN', {
                       maximumFractionDigits: 0
                     })}
@@ -454,17 +431,17 @@ export default function CostSummary() {
                     <TableRow className="font-semibold border-t-2 border-primary/30">
                       <TableCell className="sticky left-0 z-10 bg-background text-sm py-3">NET CASH FLOW</TableCell>
                       {fyMonths.map((month, idx) => {
-                        const netFlow = getInflowTotal(month) - getOutflowTotal(month);
-                        return <TableCell key={idx} className={`text-center py-3 text-xs ${netFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  const netFlow = getInflowTotal(month) - getOutflowTotal(month);
+                  return <TableCell key={idx} className={`text-center py-3 text-xs ${netFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                           ₹{Math.abs(netFlow).toLocaleString('en-IN', {
-                            maximumFractionDigits: 0
-                          })}
+                      maximumFractionDigits: 0
+                    })}
                         </TableCell>;
-                      })}
+                })}
                       <TableCell className={`text-center py-3 text-xs font-semibold ${netCashFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                         ₹{Math.abs(netCashFlow).toLocaleString('en-IN', {
-                          maximumFractionDigits: 0
-                        })}
+                    maximumFractionDigits: 0
+                  })}
                       </TableCell>
                     </TableRow>
 
@@ -481,13 +458,13 @@ export default function CostSummary() {
                             </TableCell>
                             {fyMonths.map((month, idx) => <TableCell key={idx} className="text-center py-1 text-xs text-muted-foreground">
                                 {getAmountForMonth(head, month) !== 0 ? `₹${Number(Math.abs(getAmountForMonth(head, month))).toLocaleString('en-IN', {
-                        maximumFractionDigits: 0
-                      })}` : "-"}
+                      maximumFractionDigits: 0
+                    })}` : "-"}
                               </TableCell>)}
                             <TableCell className="text-center py-1 text-xs text-muted-foreground">
                               ₹{Math.abs(fyMonths.reduce((sum, m) => sum + getAmountForMonth(head, m), 0)).toLocaleString('en-IN', {
-                        maximumFractionDigits: 0
-                      })}
+                      maximumFractionDigits: 0
+                    })}
                             </TableCell>
                           </TableRow>)}
                       </>}
