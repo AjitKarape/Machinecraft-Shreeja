@@ -219,14 +219,25 @@ export default function CostSummary() {
   // Calculate total funding as on date (cumulative up to current date, across all time)
   const today = new Date();
   const fundingMapping = expenseMappings.find(m => normalizeHead(m.expense_head) === "Funding");
+  
+  console.log("Funding Mapping:", fundingMapping);
+  console.log("Funding transactions:", bankTransactions.filter(txn => normalizeHead(txn.expense_head) === "Funding"));
+  
   const fundingOpeningBalance = fundingMapping && fundingMapping.opening_balance && 
     fundingMapping.opening_balance_date && 
     new Date(fundingMapping.opening_balance_date) <= today 
     ? fundingMapping.opening_balance 
     : 0;
-  const totalFunding = bankTransactions
+  
+  const fundingTransactionsSum = bankTransactions
     .filter(txn => normalizeHead(txn.expense_head) === "Funding" && new Date(txn.date) <= today)
-    .reduce((sum, txn) => sum + txn.amount, 0) + fundingOpeningBalance;
+    .reduce((sum, txn) => sum + txn.amount, 0);
+    
+  const totalFunding = fundingTransactionsSum + fundingOpeningBalance;
+  
+  console.log("Funding Opening Balance:", fundingOpeningBalance);
+  console.log("Funding Transactions Sum:", fundingTransactionsSum);
+  console.log("Total Funding:", totalFunding);
 
   const availableYears = Array.from(new Set([...bankTransactions.map(t => {
     const date = new Date(t.date);
