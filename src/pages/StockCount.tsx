@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useData } from "@/contexts/DataContext";
-import { NavHeader } from "@/components/NavHeader";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { StockTile } from "@/components/stock/StockTile";
@@ -87,7 +86,6 @@ export default function StockCount() {
         </Card>)}
     </>;
   return <div className="min-h-screen bg-gradient-mesh">
-      <NavHeader />
       <div className="py-4 px-3">
       {/* Header */}
       <div className="flex justify-between items-center mb-4">

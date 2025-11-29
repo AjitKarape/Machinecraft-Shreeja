@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { NavHeader } from "@/components/NavHeader";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -769,8 +768,6 @@ export default function BankReco() {
     toast.success("PDF file downloaded successfully");
   };
   return <div className="min-h-screen bg-gradient-mesh">
-      <NavHeader />
-      
       <main className="px-3 py-2">
         <div className="mb-3">
           <h1 className="text-foreground mb-1 text-xl font-medium">Bank Reconciliation</h1>

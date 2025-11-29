@@ -4,8 +4,12 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useUserRole } from "@/hooks/useUserRole";
+
 export const NavHeader = () => {
   const navigate = useNavigate();
+  const { isWorker, isAdmin, isLoading } = useUserRole();
+  
   const handleSignOut = async () => {
     const {
       error
@@ -16,40 +20,52 @@ export const NavHeader = () => {
       navigate("/auth");
     }
   };
+  if (isLoading) {
+    return null; // Or a loading skeleton if preferred
+  }
+
   return <header className="glass-header sticky top-0 z-50 border-b border-border/50 px-3 py-2 backdrop-blur-md">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-yellow-800">machinecraft.co</h1>
         
         <nav className="flex items-center gap-1">
-          <NavLink to="/dashboard" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-accent/50" activeClassName="glass text-accent-foreground shadow-sm">
-            <LayoutDashboard className="w-4 h-4" />
-            To-Do
-          </NavLink>
+          {!isWorker && (
+            <NavLink to="/dashboard" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-accent/50" activeClassName="glass text-accent-foreground shadow-sm">
+              <LayoutDashboard className="w-4 h-4" />
+              To-Do
+            </NavLink>
+          )}
           
           <NavLink to="/daily-log" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-accent/50" activeClassName="glass text-accent-foreground shadow-sm">
             <ClipboardList className="w-4 h-4" />
             Logs
           </NavLink>
           
-          <NavLink to="/stock-count" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-accent/50" activeClassName="glass text-accent-foreground shadow-sm">
-            <Package className="w-4 h-4" />
-            Stock
-          </NavLink>
+          {!isWorker && (
+            <>
+              <NavLink to="/stock-count" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-accent/50" activeClassName="glass text-accent-foreground shadow-sm">
+                <Package className="w-4 h-4" />
+                Stock
+              </NavLink>
+              
+              <NavLink to="/cost-summary" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-accent/50" activeClassName="glass text-accent-foreground shadow-sm">
+                <IndianRupee className="w-4 h-4" />
+                Cost
+              </NavLink>
+              
+              <NavLink to="/bank-reco" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-accent/50" activeClassName="glass text-accent-foreground shadow-sm">
+                <ClipboardList className="w-4 h-4" />
+                Bank
+              </NavLink>
+            </>
+          )}
           
-          <NavLink to="/cost-summary" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-accent/50" activeClassName="glass text-accent-foreground shadow-sm">
-            <IndianRupee className="w-4 h-4" />
-            Cost
-          </NavLink>
-          
-          <NavLink to="/bank-reco" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-accent/50" activeClassName="glass text-accent-foreground shadow-sm">
-            <ClipboardList className="w-4 h-4" />
-            Bank
-          </NavLink>
-          
-          <NavLink to="/settings" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-accent/50" activeClassName="glass text-accent-foreground shadow-sm">
-            <Settings className="w-4 h-4" />
-            Settings
-          </NavLink>
+          {isAdmin && (
+            <NavLink to="/settings" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-muted-foreground transition-all duration-200 hover:text-foreground hover:bg-accent/50" activeClassName="glass text-accent-foreground shadow-sm">
+              <Settings className="w-4 h-4" />
+              Settings
+            </NavLink>
+          )}
         </nav>
 
         <Button variant="ghost" size="sm" onClick={handleSignOut} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">

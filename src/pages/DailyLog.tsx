@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { NavHeader } from "@/components/NavHeader";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -356,8 +355,6 @@ export default function DailyLog() {
   const notesWithWeeklyOff = addWeeklyOffEntries(baseFilteredNotes);
   const filteredNotes = addPendingEntries(notesWithWeeklyOff);
   return <div className="min-h-screen bg-gradient-mesh">
-      <NavHeader />
-      
       <main className="px-3 py-3">
         <div className="mb-3">
           <div className="flex justify-between items-start mb-3">

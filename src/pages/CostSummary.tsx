@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { NavHeader } from "@/components/NavHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { IndianRupee, TrendingUp, ChevronDown, ChevronRight } from "lucide-react";
@@ -243,8 +242,6 @@ export default function CostSummary() {
       </TableCell>;
   };
   return <div className="min-h-screen bg-gradient-mesh">
-      <NavHeader />
-      
       <main className="px-3 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

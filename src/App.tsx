@@ -2,11 +2,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { DataProvider } from "@/contexts/DataContext";
+import { useUserRole } from "@/hooks/useUserRole";
+import type { Database } from "@/integrations/supabase/types";
+import { NavHeader } from "@/components/NavHeader";
 import Dashboard from "./pages/Dashboard";
 import DailyLog from "./pages/DailyLog";
 import StockCount from "./pages/StockCount";
@@ -15,6 +18,9 @@ import BankReco from "./pages/BankReco";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import Index from "./pages/Index";
+
+type AppRole = Database["public"]["Enums"]["app_role"];
 
 const queryClient = new QueryClient();
 
@@ -52,6 +58,45 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+const RoleProtectedRoute = ({ 
+  children, 
+  allowedRoles 
+}: { 
+  children: React.ReactNode;
+  allowedRoles: AppRole[];
+}) => {
+  const { roles, isLoading } = useUserRole();
+  const navigate = useNavigate();
+  const [hasChecked, setHasChecked] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading && !hasChecked) {
+      const hasAccess = roles.some(role => allowedRoles.includes(role));
+      
+      if (!hasAccess) {
+        // Workers get redirected to their only accessible page
+        if (roles.includes("worker")) {
+          navigate("/daily-log", { replace: true });
+        } else {
+          navigate("/dashboard", { replace: true });
+        }
+      }
+      setHasChecked(true);
+    }
+  }, [isLoading, roles, allowedRoles, navigate, hasChecked]);
+
+  if (isLoading || !hasChecked) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
+  const hasAccess = roles.some(role => allowedRoles.includes(role));
+  return hasAccess ? <>{children}</> : null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -62,10 +107,21 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Index />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/dashboard"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <RoleProtectedRoute allowedRoles={["admin", "editor"]}>
+                    <NavHeader />
+                    <Dashboard />
+                  </RoleProtectedRoute>
                 </ProtectedRoute>
               }
             />
@@ -73,7 +129,10 @@ const App = () => (
               path="/daily-log"
               element={
                 <ProtectedRoute>
-                  <DailyLog />
+                  <RoleProtectedRoute allowedRoles={["admin", "editor", "worker"]}>
+                    <NavHeader />
+                    <DailyLog />
+                  </RoleProtectedRoute>
                 </ProtectedRoute>
               }
             />
@@ -81,7 +140,10 @@ const App = () => (
               path="/stock-count"
               element={
                 <ProtectedRoute>
-                  <StockCount />
+                  <RoleProtectedRoute allowedRoles={["admin", "editor"]}>
+                    <NavHeader />
+                    <StockCount />
+                  </RoleProtectedRoute>
                 </ProtectedRoute>
               }
             />
@@ -89,7 +151,10 @@ const App = () => (
               path="/cost-summary"
               element={
                 <ProtectedRoute>
-                  <CostSummary />
+                  <RoleProtectedRoute allowedRoles={["admin", "editor"]}>
+                    <NavHeader />
+                    <CostSummary />
+                  </RoleProtectedRoute>
                 </ProtectedRoute>
               }
             />
@@ -97,7 +162,10 @@ const App = () => (
               path="/bank-reco"
               element={
                 <ProtectedRoute>
-                  <BankReco />
+                  <RoleProtectedRoute allowedRoles={["admin", "editor"]}>
+                    <NavHeader />
+                    <BankReco />
+                  </RoleProtectedRoute>
                 </ProtectedRoute>
               }
             />
@@ -105,11 +173,13 @@ const App = () => (
               path="/settings"
               element={
                 <ProtectedRoute>
-                  <Settings />
+                  <RoleProtectedRoute allowedRoles={["admin"]}>
+                    <NavHeader />
+                    <Settings />
+                  </RoleProtectedRoute>
                 </ProtectedRoute>
               }
             />
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
