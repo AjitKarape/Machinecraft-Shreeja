@@ -165,13 +165,15 @@ export default function CostSummary() {
   const fyMonths = getFinancialYearMonths(selectedFinancialYear);
   const aggregatedData = aggregateTransactionsByMonth();
 
-  // Define Cash Flow groups - simplified
+  // Define Cash Flow groups - simplified, use group names for classification
+  const inflowGroupNames = ["Revenue", "Receipts"];
+  
   const inflowHeads = expenseMappings.filter(m => 
-    m.is_revenue || m.group_name === "Receipts"
+    inflowGroupNames.includes(m.group_name)
   ).map(m => normalizeHead(m.expense_head));
   
   const outflowHeads = expenseMappings.filter(m => 
-    !m.is_revenue && m.group_name !== "Receipts"
+    !inflowGroupNames.includes(m.group_name)
   ).map(m => normalizeHead(m.expense_head));
   // Find unmapped expense heads
   const allExpenseHeads = Array.from(new Set(bankTransactions.map(t => normalizeHead(t.expense_head)).filter(Boolean))) as string[];

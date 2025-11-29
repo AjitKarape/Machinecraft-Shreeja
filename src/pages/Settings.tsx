@@ -59,8 +59,8 @@ export default function Settings() {
   const [editingExpenseMapping, setEditingExpenseMapping] = useState<any>(null);
   const [newExpenseHead, setNewExpenseHead] = useState("");
   const [newGroup, setNewGroup] = useState("");
-  const [newIsRevenue, setNewIsRevenue] = useState(false);
   const [newOpeningBalance, setNewOpeningBalance] = useState("0");
+  const [newOpeningBalanceDate, setNewOpeningBalanceDate] = useState("2024-04-01");
   useEffect(() => {
     fetchUserData();
     fetchExpenseMappings();
@@ -398,8 +398,8 @@ export default function Settings() {
     const { error } = await supabase.from("expense_mapping").insert({
       expense_head: newExpenseHead,
       group_name: newGroup,
-      is_revenue: newIsRevenue,
-      opening_balance: parseFloat(newOpeningBalance) || 0
+      opening_balance: parseFloat(newOpeningBalance) || 0,
+      opening_balance_date: newOpeningBalanceDate
     });
     
     if (error) {
@@ -409,26 +409,12 @@ export default function Settings() {
       setIsAddExpenseMappingOpen(false);
       setNewExpenseHead("");
       setNewGroup("");
-      setNewIsRevenue(false);
       setNewOpeningBalance("0");
+      setNewOpeningBalanceDate("2024-04-01");
       fetchExpenseMappings();
     }
   };
 
-  const handleToggleRevenue = async (id: string, currentValue: boolean) => {
-    const { error } = await supabase
-      .from("expense_mapping")
-      .update({ is_revenue: !currentValue })
-      .eq("id", id);
-    
-    if (error) {
-      toast.error("Error updating revenue flag");
-    } else {
-      toast.success("Revenue flag updated");
-      fetchExpenseMappings();
-    }
-  };
-  
   const handleDeleteExpenseMapping = async (id: string) => {
     const { error } = await supabase
       .from("expense_mapping")
@@ -447,8 +433,8 @@ export default function Settings() {
     setEditingExpenseMapping(mapping);
     setNewExpenseHead(mapping.expense_head);
     setNewGroup(mapping.group_name);
-    setNewIsRevenue(mapping.is_revenue);
     setNewOpeningBalance(mapping.opening_balance?.toString() || "0");
+    setNewOpeningBalanceDate(mapping.opening_balance_date || "2024-04-01");
     setIsEditExpenseMappingOpen(true);
   };
 
@@ -463,8 +449,8 @@ export default function Settings() {
       .update({
         expense_head: newExpenseHead,
         group_name: newGroup,
-        is_revenue: newIsRevenue,
-        opening_balance: parseFloat(newOpeningBalance) || 0
+        opening_balance: parseFloat(newOpeningBalance) || 0,
+        opening_balance_date: newOpeningBalanceDate
       })
       .eq("id", editingExpenseMapping.id);
     
@@ -476,8 +462,8 @@ export default function Settings() {
       setEditingExpenseMapping(null);
       setNewExpenseHead("");
       setNewGroup("");
-      setNewIsRevenue(false);
       setNewOpeningBalance("0");
+      setNewOpeningBalanceDate("2024-04-01");
       fetchExpenseMappings();
     }
   };
@@ -619,75 +605,22 @@ export default function Settings() {
                     Add Expense Mapping
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Add Expense Mapping</DialogTitle>
-                    <DialogDescription>
-                      Map expense heads to their corresponding groups. Mark as revenue if this represents income.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto px-2">
-                    <div className="grid gap-2">
-                      <Label>Expense Head</Label>
-                      <Input value={newExpenseHead} onChange={e => setNewExpenseHead(e.target.value)} placeholder="e.g., Rent, Salary, Sales" />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label>Group</Label>
-                      <Input value={newGroup} onChange={e => setNewGroup(e.target.value)} placeholder="e.g., Operating Cost, Direct Expenses" />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label>Opening Balance</Label>
-                      <Input 
-                        type="number" 
-                        step="0.01"
-                        value={newOpeningBalance} 
-                        onChange={e => setNewOpeningBalance(e.target.value)} 
-                        placeholder="0.00" 
-                      />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Switch 
-                        checked={newIsRevenue} 
-                        onCheckedChange={setNewIsRevenue}
-                        id="is-revenue-switch"
-                      />
-                      <Label htmlFor="is-revenue-switch" className="cursor-pointer">
-                        Mark as Revenue (Income)
-                      </Label>
-                    </div>
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setIsAddExpenseMappingOpen(false)}>Cancel</Button>
-                    <Button onClick={handleAddExpenseMapping}>Add Mapping</Button>
-                  </div>
-                  </DialogContent>
-                </Dialog>
-
-                {/* Edit Expense Mapping Dialog */}
-                <Dialog open={isEditExpenseMappingOpen} onOpenChange={(open) => {
-                  setIsEditExpenseMappingOpen(open);
-                  if (!open) {
-                    setEditingExpenseMapping(null);
-                    setNewExpenseHead("");
-                    setNewGroup("");
-                    setNewIsRevenue(false);
-                  }
-                }}>
                   <DialogContent className="max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                      <DialogTitle>Edit Expense Mapping</DialogTitle>
+                      <DialogTitle>Add Expense Mapping</DialogTitle>
                       <DialogDescription>
-                        Update the expense head, group, opening balance, or revenue flag for this mapping.
+                        Map expense heads to groups. Use "Revenue" or "Receipts" group for income items.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto px-2">
                       <div className="grid gap-2">
                         <Label>Expense Head</Label>
-                        <Input value={newExpenseHead} onChange={e => setNewExpenseHead(e.target.value)} placeholder="e.g., Rent, Salary, Sales" />
+                        <Input value={newExpenseHead} onChange={e => setNewExpenseHead(e.target.value)} placeholder="e.g., Website Sale, Funding, Salary" />
                       </div>
                       <div className="grid gap-2">
                         <Label>Group</Label>
-                        <Input value={newGroup} onChange={e => setNewGroup(e.target.value)} placeholder="e.g., Operating Cost, Direct Expenses" />
+                        <Input value={newGroup} onChange={e => setNewGroup(e.target.value)} placeholder="e.g., Revenue, Receipts, Direct Expenses, Operating Cost" />
+                        <p className="text-xs text-muted-foreground">Use "Revenue" or "Receipts" for inflow items</p>
                       </div>
                       <div className="grid gap-2">
                         <Label>Opening Balance</Label>
@@ -699,15 +632,67 @@ export default function Settings() {
                           placeholder="0.00" 
                         />
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Switch 
-                          checked={newIsRevenue} 
-                          onCheckedChange={setNewIsRevenue}
-                          id="edit-is-revenue-switch"
+                      <div className="grid gap-2">
+                        <Label>Opening Balance Date</Label>
+                        <Input 
+                          type="date"
+                          value={newOpeningBalanceDate} 
+                          onChange={e => setNewOpeningBalanceDate(e.target.value)} 
                         />
-                        <Label htmlFor="edit-is-revenue-switch" className="cursor-pointer">
-                          Mark as Revenue (Income)
-                        </Label>
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setIsAddExpenseMappingOpen(false)}>Cancel</Button>
+                      <Button onClick={handleAddExpenseMapping}>Add Mapping</Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Edit Expense Mapping Dialog */}
+                <Dialog open={isEditExpenseMappingOpen} onOpenChange={(open) => {
+                  setIsEditExpenseMappingOpen(open);
+                  if (!open) {
+                    setEditingExpenseMapping(null);
+                    setNewExpenseHead("");
+                    setNewGroup("");
+                    setNewOpeningBalance("0");
+                    setNewOpeningBalanceDate("2024-04-01");
+                  }
+                }}>
+                  <DialogContent className="max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Edit Expense Mapping</DialogTitle>
+                      <DialogDescription>
+                        Update the expense head, group, or opening balance details.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto px-2">
+                      <div className="grid gap-2">
+                        <Label>Expense Head</Label>
+                        <Input value={newExpenseHead} onChange={e => setNewExpenseHead(e.target.value)} placeholder="e.g., Website Sale, Funding, Salary" />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Group</Label>
+                        <Input value={newGroup} onChange={e => setNewGroup(e.target.value)} placeholder="e.g., Revenue, Receipts, Direct Expenses, Operating Cost" />
+                        <p className="text-xs text-muted-foreground">Use "Revenue" or "Receipts" for inflow items</p>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Opening Balance</Label>
+                        <Input 
+                          type="number" 
+                          step="0.01"
+                          value={newOpeningBalance} 
+                          onChange={e => setNewOpeningBalance(e.target.value)} 
+                          placeholder="0.00" 
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Opening Balance Date</Label>
+                        <Input 
+                          type="date"
+                          value={newOpeningBalanceDate} 
+                          onChange={e => setNewOpeningBalanceDate(e.target.value)} 
+                        />
                       </div>
                     </div>
                     <div className="flex justify-end gap-2">
@@ -716,8 +701,8 @@ export default function Settings() {
                         setEditingExpenseMapping(null);
                         setNewExpenseHead("");
                         setNewGroup("");
-                        setNewIsRevenue(false);
                         setNewOpeningBalance("0");
+                        setNewOpeningBalanceDate("2024-04-01");
                       }}>Cancel</Button>
                       <Button onClick={handleEditExpenseMapping}>Update Mapping</Button>
                     </div>
@@ -732,7 +717,7 @@ export default function Settings() {
                     <th className="text-left py-2 px-3 text-xs font-medium text-foreground">Expense Head</th>
                     <th className="text-left py-2 px-3 text-xs font-medium text-foreground">Group</th>
                     <th className="text-right py-2 px-3 text-xs font-medium text-foreground">Opening Balance</th>
-                    <th className="text-center py-2 px-3 text-xs font-medium text-foreground">Is Revenue</th>
+                    <th className="text-center py-2 px-3 text-xs font-medium text-foreground">OB Date</th>
                     <th className="text-center py-2 px-3 text-xs font-medium text-foreground">Actions</th>
                   </tr>
                 </thead>
@@ -742,13 +727,10 @@ export default function Settings() {
                       <td className="py-2 px-3 text-xs text-foreground">{mapping.expense_head}</td>
                       <td className="py-2 px-3 text-xs text-foreground">{mapping.group_name}</td>
                       <td className="py-2 px-3 text-xs text-foreground text-right">
-                        {parseFloat(mapping.opening_balance || 0).toFixed(2)}
+                        ₹{parseFloat(mapping.opening_balance || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                       </td>
-                      <td className="py-2 px-3 text-center">
-                        <Switch 
-                          checked={mapping.is_revenue} 
-                          onCheckedChange={() => handleToggleRevenue(mapping.id, mapping.is_revenue)}
-                        />
+                      <td className="py-2 px-3 text-xs text-foreground text-center">
+                        {mapping.opening_balance_date ? new Date(mapping.opening_balance_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
                       </td>
                       <td className="py-2 px-3 text-center">
                         <div className="flex items-center justify-center gap-1">
