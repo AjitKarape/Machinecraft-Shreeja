@@ -216,10 +216,13 @@ export default function CostSummary() {
   const totalYearOutflow = fyMonths.reduce((sum, month) => sum + getOutflowTotal(month), 0);
   const netCashFlow = totalYearInflow - totalYearOutflow;
 
-  // Calculate total funding as on date (cumulative across all time, not just FY)
+  // Calculate total funding as on date (cumulative up to current date, across all time)
+  const today = new Date();
   const fundingMapping = expenseMappings.find(m => normalizeHead(m.expense_head) === "Funding");
   const fundingOpeningBalance = fundingMapping?.opening_balance || 0;
-  const totalFunding = bankTransactions.filter(txn => normalizeHead(txn.expense_head) === "Funding").reduce((sum, txn) => sum + txn.amount, 0) + fundingOpeningBalance;
+  const totalFunding = bankTransactions
+    .filter(txn => normalizeHead(txn.expense_head) === "Funding" && new Date(txn.date) <= today)
+    .reduce((sum, txn) => sum + txn.amount, 0) + fundingOpeningBalance;
 
   const availableYears = Array.from(new Set([...bankTransactions.map(t => {
     const date = new Date(t.date);
