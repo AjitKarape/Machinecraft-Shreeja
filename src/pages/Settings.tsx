@@ -361,7 +361,9 @@ export default function Settings() {
       });
       const result = await response.json();
       if (!response.ok) {
-        throw new Error(result.error || "Failed to create user");
+        const errorMessage = result.error || "Failed to create user";
+        toast.error(errorMessage);
+        return; // Don't throw, just return to prevent blank screen
       }
       toast.success("User created successfully");
       setIsAddUserOpen(false);
