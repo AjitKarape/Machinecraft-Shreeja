@@ -63,6 +63,13 @@ serve(async (req) => {
     });
 
     if (createError) {
+      // Handle duplicate email error specifically
+      if (createError.message?.includes("already been registered")) {
+        return new Response(JSON.stringify({ error: "This email address is already registered. Please use a different email." }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        });
+      }
       throw createError;
     }
 
