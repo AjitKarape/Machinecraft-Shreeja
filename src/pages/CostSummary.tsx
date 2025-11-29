@@ -47,6 +47,7 @@ export default function CostSummary() {
   const [selectedFinancialYear, setSelectedFinancialYear] = useState<number>(getCurrentFinancialYear());
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     "Revenue": true,
+    "Receipts": true,
     "Direct Expenses": true,
     "Operating Cost": true,
     "Assets": false,
@@ -169,11 +170,13 @@ export default function CostSummary() {
   const fyMonths = getFinancialYearMonths(selectedFinancialYear);
   const aggregatedData = aggregateTransactionsByMonth();
 
-  // Define P&L groups in order
-  const plGroups = ["Direct Expenses", "Operating Cost"];
+  // Define Cash Flow groups
+  const inflowGroups = ["Revenue", "Receipts"];
+  const outflowGroups = ["Direct Expenses", "Operating Cost"];
 
   // Categorize expense_heads into revenue and expense groups
-  const revenueHeads = expenseMappings.filter(m => m.is_revenue).map(m => normalizeHead(m.expense_head));
+  const revenueHeads = expenseMappings.filter(m => m.is_revenue && m.group_name !== "Receipts").map(m => normalizeHead(m.expense_head));
+  const receiptsHeads = expenseMappings.filter(m => m.group_name === "Receipts").map(m => normalizeHead(m.expense_head));
   const expenseToGroup: Record<string, string> = {};
   const groupedExpenses: Record<string, string[]> = {};
   expenseMappings.forEach(mapping => {
@@ -198,12 +201,12 @@ export default function CostSummary() {
     groupedExpenses["Unclassified"] = unmappedExpenses;
   }
 
-  // Separate P&L groups from other categories
-  const plGroupedExpenses: Record<string, string[]> = {};
+  // Separate Cash Flow groups from other categories
+  const cashFlowGroupedExpenses: Record<string, string[]> = {};
   const otherGroupedExpenses: Record<string, string[]> = {};
   Object.entries(groupedExpenses).forEach(([groupName, heads]) => {
-    if (plGroups.includes(groupName)) {
-      plGroupedExpenses[groupName] = heads;
+    if (outflowGroups.includes(groupName)) {
+      cashFlowGroupedExpenses[groupName] = heads;
     } else {
       otherGroupedExpenses[groupName] = heads;
     }
@@ -230,21 +233,24 @@ export default function CostSummary() {
     return revenueHeads.reduce((sum, head) => sum + getAmountForMonth(head, month), 0);
   };
 
-  // Financial year P&L calculations (only for P&L groups)
+  const getReceiptsTotal = (month: string) => {
+    return receiptsHeads.reduce((sum, head) => sum + getAmountForMonth(head, month), 0);
+  };
+
+  // Financial year Cash Flow calculations
   const totalYearRevenue = fyMonths.reduce((sum, month) => sum + getRevenueTotal(month), 0);
+  const totalYearReceipts = fyMonths.reduce((sum, month) => sum + getReceiptsTotal(month), 0);
+  const totalYearInflow = totalYearRevenue + totalYearReceipts;
+  
   const totalYearDirectExpenses = fyMonths.reduce((sum, month) => {
     return sum + getGroupTotal("Direct Expenses", month);
   }, 0);
   const totalYearOperatingExpenses = fyMonths.reduce((sum, month) => {
     return sum + getGroupTotal("Operating Cost", month);
   }, 0);
-  const grossProfit = totalYearRevenue + totalYearDirectExpenses;
-  const netProfit = grossProfit + totalYearOperatingExpenses;
+  const totalYearOutflow = Math.abs(totalYearDirectExpenses) + Math.abs(totalYearOperatingExpenses);
+  const netCashFlow = totalYearInflow - totalYearOutflow;
 
-  // Calculate total funding as on date (cumulative)
-  const fundingMapping = expenseMappings.find(m => normalizeHead(m.expense_head) === "Funding");
-  const fundingOpeningBalance = fundingMapping?.opening_balance || 0;
-  const totalFunding = bankTransactions.filter(txn => txn.expense_head === "Funding").reduce((sum, txn) => sum + txn.amount, 0) + fundingOpeningBalance;
   const availableYears = Array.from(new Set([...bankTransactions.map(t => {
     const date = new Date(t.date);
     const month = date.getMonth();
@@ -272,9 +278,9 @@ export default function CostSummary() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Cost Summary</h1>
+            <h1 className="text-2xl font-bold text-foreground">Cash Flow Statement</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              4 metrics · FY {selectedFinancialYear}-{String(selectedFinancialYear + 1).slice(2)}
+              3 metrics · FY {selectedFinancialYear}-{String(selectedFinancialYear + 1).slice(2)}
             </p>
           </div>
           <select className="border rounded px-3 py-2 text-sm bg-background" value={selectedFinancialYear} onChange={e => setSelectedFinancialYear(Number(e.target.value))}>
@@ -285,18 +291,17 @@ export default function CostSummary() {
         </div>
 
         {/* Summary Tiles */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
           <Card className="overflow-hidden hover:shadow-lg transition-all animate-fade-in">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-xs text-muted-foreground mb-1 truncate">
-                    Gross Profit
+                    Net Cash Flow
                   </h3>
                   <div className="flex items-baseline gap-1.5">
-                    <span className={`text-2xl font-bold leading-none ${grossProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      ₹{Math.abs(grossProfit).toLocaleString('en-IN', {
+                    <span className={`text-2xl font-bold leading-none ${netCashFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      ₹{Math.abs(netCashFlow).toLocaleString('en-IN', {
                       maximumFractionDigits: 0
                     })}
                     </span>
@@ -309,34 +314,13 @@ export default function CostSummary() {
           <Card className="overflow-hidden hover:shadow-lg transition-all animate-fade-in">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-xs text-muted-foreground mb-1 truncate">
-                    Net Profit
-                  </h3>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className={`text-2xl font-bold leading-none ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      ₹{Math.abs(netProfit).toLocaleString('en-IN', {
-                      maximumFractionDigits: 0
-                    })}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="overflow-hidden hover:shadow-lg transition-all animate-fade-in">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-xs text-muted-foreground mb-1 truncate">
-                    Total Revenue
+                    Total Inflow
                   </h3>
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-2xl font-bold text-primary leading-none">
-                      ₹{totalYearRevenue.toLocaleString('en-IN', {
+                      ₹{totalYearInflow.toLocaleString('en-IN', {
                       maximumFractionDigits: 0
                     })}
                     </span>
@@ -349,14 +333,13 @@ export default function CostSummary() {
           <Card className="overflow-hidden hover:shadow-lg transition-all animate-fade-in">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-xs text-muted-foreground mb-1 truncate">
-                    Total Funding
+                    Total Outflow
                   </h3>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl font-bold text-primary leading-none">
-                      ₹{totalFunding.toLocaleString('en-IN', {
+                    <span className="text-2xl font-bold text-destructive leading-none">
+                      ₹{totalYearOutflow.toLocaleString('en-IN', {
                       maximumFractionDigits: 0
                     })}
                     </span>
@@ -369,10 +352,10 @@ export default function CostSummary() {
 
         <Separator className="my-6" />
 
-        {/* P&L Statement Table */}
+        {/* Cash Flow Statement Table */}
         <div className="mb-6">
           <h2 className="text-xl font-bold text-foreground mb-4">
-            Profit & Loss Statement (Apr - Mar)
+            Cash Flow Statement (Apr - Mar)
           </h2>
           <div className="overflow-x-auto border rounded-md glass neu-card">
                 <Table>
@@ -386,6 +369,13 @@ export default function CostSummary() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
+                    {/* INFLOW Header */}
+                    <TableRow className="bg-accent/20">
+                      <TableCell colSpan={14} className="text-center py-2 text-sm font-bold text-foreground">
+                        INFLOW
+                      </TableCell>
+                    </TableRow>
+
                     {/* Revenue Section */}
                     <TableRow className="bg-muted/50 hover:bg-muted/60">
                       <TableCell className="sticky left-0 z-10 bg-muted/50 hover:bg-muted/60">
@@ -420,10 +410,69 @@ export default function CostSummary() {
                         </TableCell>
                       </TableRow>)}
 
+                    {/* Receipts Section */}
+                    <TableRow className="bg-muted/50 hover:bg-muted/60">
+                      <TableCell className="sticky left-0 z-10 bg-muted/50 hover:bg-muted/60">
+                        <Collapsible open={expandedGroups["Receipts"]} onOpenChange={() => toggleGroup("Receipts")}>
+                          <CollapsibleTrigger className="flex items-center gap-2 font-semibold text-foreground text-sm">
+                            {expandedGroups["Receipts"] ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                            Receipts
+                          </CollapsibleTrigger>
+                        </Collapsible>
+                      </TableCell>
+                      {fyMonths.map((month, idx) => <TableCell key={idx} className="text-center py-1 text-xs font-medium">
+                          ₹{getReceiptsTotal(month).toLocaleString('en-IN', {
+                    maximumFractionDigits: 0
+                  })}
+                        </TableCell>)}
+                      <TableCell className="text-center py-1 text-xs font-bold">
+                        ₹{totalYearReceipts.toLocaleString('en-IN', {
+                    maximumFractionDigits: 0
+                  })}
+                      </TableCell>
+                    </TableRow>
+
+                    {expandedGroups["Receipts"] && receiptsHeads.map(head => <TableRow key={head} className="hover:bg-muted/30">
+                        <TableCell className="sticky left-0 z-10 bg-background pl-8 text-xs text-muted-foreground">
+                          {head}
+                        </TableCell>
+                        {fyMonths.map((month, idx) => renderAmountCell(head, month, idx))}
+                        <TableCell className="text-center py-1 text-xs">
+                          ₹{Math.abs(fyMonths.reduce((sum, m) => sum + getAmountForMonth(head, m), 0)).toLocaleString('en-IN', {
+                    maximumFractionDigits: 0
+                  })}
+                        </TableCell>
+                      </TableRow>)}
+
+                    {/* Total Inflow Row */}
+                    <TableRow className="bg-primary/10 font-bold">
+                      <TableCell className="sticky left-0 z-10 bg-primary/10 text-sm">Total Inflow</TableCell>
+                      {fyMonths.map((month, idx) => {
+                        const inflow = getRevenueTotal(month) + getReceiptsTotal(month);
+                        return <TableCell key={idx} className="text-center py-1 text-xs text-green-600">
+                          ₹{inflow.toLocaleString('en-IN', {
+                            maximumFractionDigits: 0
+                          })}
+                        </TableCell>;
+                      })}
+                      <TableCell className="text-center py-1 text-xs font-bold text-green-600">
+                        ₹{totalYearInflow.toLocaleString('en-IN', {
+                          maximumFractionDigits: 0
+                        })}
+                      </TableCell>
+                    </TableRow>
+
+                    {/* OUTFLOW Header */}
+                    <TableRow className="bg-destructive/20">
+                      <TableCell colSpan={14} className="text-center py-2 text-sm font-bold text-foreground">
+                        OUTFLOW
+                      </TableCell>
+                    </TableRow>
+
                     {/* Direct Expenses Section */}
                     {(() => {
                 const groupName = "Direct Expenses";
-                const heads = plGroupedExpenses[groupName];
+                const heads = cashFlowGroupedExpenses[groupName];
                 if (!heads || heads.length === 0) return null;
                 return <React.Fragment key={groupName}>
                           <TableRow className="bg-muted/50 hover:bg-muted/60">
@@ -460,29 +509,11 @@ export default function CostSummary() {
                             </TableRow>)}
                         </React.Fragment>;
               })()}
-
-                    {/* Gross Profit Row - Right after Direct Expenses */}
-                    {plGroupedExpenses["Direct Expenses"] && <TableRow className="bg-primary/10 font-bold">
-                        <TableCell className="sticky left-0 z-10 bg-primary/10 text-sm">Gross Profit</TableCell>
-                        {fyMonths.map((month, idx) => {
-                  const gross = getRevenueTotal(month) + getGroupTotal("Direct Expenses", month);
-                  return <TableCell key={idx} className={`text-center py-1 text-xs ${gross >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              ₹{Math.abs(gross).toLocaleString('en-IN', {
-                      maximumFractionDigits: 0
-                    })}
-                            </TableCell>;
-                })}
-                        <TableCell className={`text-center py-1 text-xs font-bold ${grossProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          ₹{Math.abs(grossProfit).toLocaleString('en-IN', {
-                    maximumFractionDigits: 0
-                  })}
-                        </TableCell>
-                      </TableRow>}
 
                     {/* Operating Cost Section */}
                     {(() => {
                 const groupName = "Operating Cost";
-                const heads = plGroupedExpenses[groupName];
+                const heads = cashFlowGroupedExpenses[groupName];
                 if (!heads || heads.length === 0) return null;
                 return <React.Fragment key={groupName}>
                           <TableRow className="bg-muted/50 hover:bg-muted/60">
@@ -520,29 +551,49 @@ export default function CostSummary() {
                         </React.Fragment>;
               })()}
 
-                    {/* Net Profit Row - After Operating Cost */}
-                    {plGroupedExpenses["Operating Cost"] && <TableRow className="bg-primary/10 font-bold">
-                        <TableCell className="sticky left-0 z-10 bg-primary/10 text-sm">Net Profit</TableCell>
+                    {/* Total Outflow Row */}
+                    {cashFlowGroupedExpenses["Operating Cost"] && <TableRow className="bg-primary/10 font-bold">
+                        <TableCell className="sticky left-0 z-10 bg-primary/10 text-sm">Total Outflow</TableCell>
                         {fyMonths.map((month, idx) => {
-                  const net = getRevenueTotal(month) + getGroupTotal("Direct Expenses", month) + getGroupTotal("Operating Cost", month);
-                  return <TableCell key={idx} className={`text-center py-1 text-xs ${net >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              ₹{Math.abs(net).toLocaleString('en-IN', {
+                  const outflow = Math.abs(getGroupTotal("Direct Expenses", month)) + Math.abs(getGroupTotal("Operating Cost", month));
+                  return <TableCell key={idx} className="text-center py-1 text-xs text-red-600">
+                              ₹{outflow.toLocaleString('en-IN', {
                       maximumFractionDigits: 0
                     })}
                             </TableCell>;
                 })}
-                        <TableCell className={`text-center py-1 text-xs font-bold ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          ₹{Math.abs(netProfit).toLocaleString('en-IN', {
+                        <TableCell className="text-center py-1 text-xs font-bold text-red-600">
+                          ₹{totalYearOutflow.toLocaleString('en-IN', {
                     maximumFractionDigits: 0
                   })}
                         </TableCell>
                       </TableRow>}
 
-                    {/* Other Categories - Non P&L Items */}
+                    {/* Net Cash Flow Row */}
+                    {cashFlowGroupedExpenses["Operating Cost"] && <TableRow className="bg-accent/20 font-bold border-t-2 border-accent">
+                        <TableCell className="sticky left-0 z-10 bg-accent/20 text-sm">NET CASH FLOW</TableCell>
+                        {fyMonths.map((month, idx) => {
+                  const inflow = getRevenueTotal(month) + getReceiptsTotal(month);
+                  const outflow = Math.abs(getGroupTotal("Direct Expenses", month)) + Math.abs(getGroupTotal("Operating Cost", month));
+                  const netFlow = inflow - outflow;
+                  return <TableCell key={idx} className={`text-center py-1 text-xs ${netFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              ₹{Math.abs(netFlow).toLocaleString('en-IN', {
+                      maximumFractionDigits: 0
+                    })}
+                            </TableCell>;
+                })}
+                        <TableCell className={`text-center py-1 text-xs font-bold ${netCashFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          ₹{Math.abs(netCashFlow).toLocaleString('en-IN', {
+                    maximumFractionDigits: 0
+                  })}
+                        </TableCell>
+                      </TableRow>}
+
+                    {/* Other Categories - Non Cash Flow Items */}
                     {Object.keys(otherGroupedExpenses).length > 0 && <>
                         <TableRow className="bg-muted/30">
                           <TableCell colSpan={14} className="text-center py-2 text-xs text-muted-foreground italic">
-                            ─── Other Categories (Not included in P&L) ───
+                            ─── Other Categories (Not included in Cash Flow) ───
                           </TableCell>
                         </TableRow>
 
