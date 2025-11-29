@@ -46,13 +46,8 @@ export default function CostSummary() {
   const [stockCounts, setStockCounts] = useState<StockCount[]>([]);
   const [selectedFinancialYear, setSelectedFinancialYear] = useState<number>(getCurrentFinancialYear());
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
-    "Revenue": true,
-    "Receipts": true,
-    "Direct Expenses": true,
-    "Operating Cost": true,
-    "Assets": false,
-    "Investment": false,
-    "Unclassified": false
+    "Inflow": true,
+    "Outflow": true
   });
   useEffect(() => {
     fetchBankTransactions();
@@ -170,47 +165,18 @@ export default function CostSummary() {
   const fyMonths = getFinancialYearMonths(selectedFinancialYear);
   const aggregatedData = aggregateTransactionsByMonth();
 
-  // Define Cash Flow groups
-  const inflowGroups = ["Revenue", "Receipts"];
-  const outflowGroups = ["Direct Expenses", "Operating Cost"];
-
-  // Categorize expense_heads into revenue and expense groups
-  const revenueHeads = expenseMappings.filter(m => m.is_revenue && m.group_name !== "Receipts").map(m => normalizeHead(m.expense_head));
-  const receiptsHeads = expenseMappings.filter(m => m.group_name === "Receipts").map(m => normalizeHead(m.expense_head));
-  const expenseToGroup: Record<string, string> = {};
-  const groupedExpenses: Record<string, string[]> = {};
-  expenseMappings.forEach(mapping => {
-    if (!mapping.is_revenue) {
-      const normalizedHead = normalizeHead(mapping.expense_head);
-      if (!normalizedHead) return;
-
-      // Normalize group name to handle case inconsistencies
-      const normalizedGroup = mapping.group_name === "Operating cost" ? "Operating Cost" : mapping.group_name;
-      expenseToGroup[normalizedHead] = normalizedGroup;
-      if (!groupedExpenses[normalizedGroup]) {
-        groupedExpenses[normalizedGroup] = [];
-      }
-      groupedExpenses[normalizedGroup].push(normalizedHead);
-    }
-  });
-
+  // Define Cash Flow groups - simplified
+  const inflowHeads = expenseMappings.filter(m => 
+    m.is_revenue || m.group_name === "Receipts"
+  ).map(m => normalizeHead(m.expense_head));
+  
+  const outflowHeads = expenseMappings.filter(m => 
+    !m.is_revenue && m.group_name !== "Receipts"
+  ).map(m => normalizeHead(m.expense_head));
   // Find unmapped expense heads
   const allExpenseHeads = Array.from(new Set(bankTransactions.map(t => normalizeHead(t.expense_head)).filter(Boolean))) as string[];
-  const unmappedExpenses = allExpenseHeads.filter(head => !expenseToGroup[head] && !revenueHeads.includes(head));
-  if (unmappedExpenses.length > 0) {
-    groupedExpenses["Unclassified"] = unmappedExpenses;
-  }
-
-  // Separate Cash Flow groups from other categories
-  const cashFlowGroupedExpenses: Record<string, string[]> = {};
-  const otherGroupedExpenses: Record<string, string[]> = {};
-  Object.entries(groupedExpenses).forEach(([groupName, heads]) => {
-    if (outflowGroups.includes(groupName)) {
-      cashFlowGroupedExpenses[groupName] = heads;
-    } else {
-      otherGroupedExpenses[groupName] = heads;
-    }
-  });
+  const unmappedExpenses = allExpenseHeads.filter(head => !inflowHeads.includes(head) && !outflowHeads.includes(head));
+  
   const getAmountForMonth = (expenseHead: string, month: string) => {
     const item = aggregatedData.find(a => a.expense_head === expenseHead && a.month === month);
     let amount = item ? item.amount : 0;
@@ -225,30 +191,18 @@ export default function CostSummary() {
     }
     return amount;
   };
-  const getGroupTotal = (groupName: string, month: string) => {
-    const headsInGroup = groupedExpenses[groupName] || [];
-    return headsInGroup.reduce((sum, head) => sum + getAmountForMonth(head, month), 0);
-  };
-  const getRevenueTotal = (month: string) => {
-    return revenueHeads.reduce((sum, head) => sum + getAmountForMonth(head, month), 0);
+
+  const getInflowTotal = (month: string) => {
+    return inflowHeads.reduce((sum, head) => sum + getAmountForMonth(head, month), 0);
   };
 
-  const getReceiptsTotal = (month: string) => {
-    return receiptsHeads.reduce((sum, head) => sum + getAmountForMonth(head, month), 0);
+  const getOutflowTotal = (month: string) => {
+    return outflowHeads.reduce((sum, head) => sum + Math.abs(getAmountForMonth(head, month)), 0);
   };
 
   // Financial year Cash Flow calculations
-  const totalYearRevenue = fyMonths.reduce((sum, month) => sum + getRevenueTotal(month), 0);
-  const totalYearReceipts = fyMonths.reduce((sum, month) => sum + getReceiptsTotal(month), 0);
-  const totalYearInflow = totalYearRevenue + totalYearReceipts;
-  
-  const totalYearDirectExpenses = fyMonths.reduce((sum, month) => {
-    return sum + getGroupTotal("Direct Expenses", month);
-  }, 0);
-  const totalYearOperatingExpenses = fyMonths.reduce((sum, month) => {
-    return sum + getGroupTotal("Operating Cost", month);
-  }, 0);
-  const totalYearOutflow = Math.abs(totalYearDirectExpenses) + Math.abs(totalYearOperatingExpenses);
+  const totalYearInflow = fyMonths.reduce((sum, month) => sum + getInflowTotal(month), 0);
+  const totalYearOutflow = fyMonths.reduce((sum, month) => sum + getOutflowTotal(month), 0);
   const netCashFlow = totalYearInflow - totalYearOutflow;
 
   const availableYears = Array.from(new Set([...bankTransactions.map(t => {
@@ -357,49 +311,42 @@ export default function CostSummary() {
           <h2 className="text-xl font-bold text-foreground mb-4">
             Cash Flow Statement (Apr - Mar)
           </h2>
-          <div className="overflow-x-auto border rounded-md glass neu-card">
+          <div className="overflow-x-auto border rounded-md bg-white/60 backdrop-blur-md shadow-sm">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-muted hover:bg-muted">
-                      <TableHead className="sticky left-0 z-20 bg-muted w-48 min-w-48 text-xs">Category</TableHead>
+                    <TableRow className="border-b">
+                      <TableHead className="sticky left-0 z-20 bg-background w-48 min-w-48 text-xs font-semibold">Category</TableHead>
                       {fyMonths.map((month, idx) => <TableHead key={idx} className="text-center text-xs whitespace-nowrap">
                           {format(new Date(month), "MMM yy")}
                         </TableHead>)}
-                      <TableHead className="text-center text-xs font-bold">Total</TableHead>
+                      <TableHead className="text-center text-xs font-semibold">Total</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {/* INFLOW Header */}
-                    <TableRow className="bg-accent/20">
-                      <TableCell colSpan={14} className="text-center py-2 text-sm font-bold text-foreground">
-                        INFLOW
-                      </TableCell>
-                    </TableRow>
-
-                    {/* Revenue Section */}
-                    <TableRow className="bg-muted/50 hover:bg-muted/60">
-                      <TableCell className="sticky left-0 z-10 bg-muted/50 hover:bg-muted/60">
-                        <Collapsible open={expandedGroups["Revenue"]} onOpenChange={() => toggleGroup("Revenue")}>
-                          <CollapsibleTrigger className="flex items-center gap-2 font-semibold text-foreground text-sm">
-                            {expandedGroups["Revenue"] ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                            Revenue
+                    {/* INFLOW Section */}
+                    <TableRow className="border-b">
+                      <TableCell className="sticky left-0 z-10 bg-background">
+                        <Collapsible open={expandedGroups["Inflow"]} onOpenChange={() => toggleGroup("Inflow")}>
+                          <CollapsibleTrigger className="flex items-center gap-2 font-semibold text-foreground text-sm py-2">
+                            {expandedGroups["Inflow"] ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                            INFLOW
                           </CollapsibleTrigger>
                         </Collapsible>
                       </TableCell>
-                      {fyMonths.map((month, idx) => <TableCell key={idx} className="text-center py-1 text-xs font-medium">
-                          ₹{getRevenueTotal(month).toLocaleString('en-IN', {
+                      {fyMonths.map((month, idx) => <TableCell key={idx} className="text-center py-2 text-xs font-medium">
+                          ₹{getInflowTotal(month).toLocaleString('en-IN', {
                     maximumFractionDigits: 0
                   })}
                         </TableCell>)}
-                      <TableCell className="text-center py-1 text-xs font-bold">
-                        ₹{totalYearRevenue.toLocaleString('en-IN', {
+                      <TableCell className="text-center py-2 text-xs font-semibold">
+                        ₹{totalYearInflow.toLocaleString('en-IN', {
                     maximumFractionDigits: 0
                   })}
                       </TableCell>
                     </TableRow>
 
-                    {expandedGroups["Revenue"] && revenueHeads.map(head => <TableRow key={head} className="hover:bg-muted/30">
-                        <TableCell className="sticky left-0 z-10 bg-background pl-8 text-xs text-muted-foreground">
+                    {expandedGroups["Inflow"] && inflowHeads.map(head => <TableRow key={head} className="hover:bg-muted/20 border-b border-border/50">
+                        <TableCell className="sticky left-0 z-10 bg-background pl-8 text-xs">
                           {head}
                         </TableCell>
                         {fyMonths.map((month, idx) => renderAmountCell(head, month, idx))}
@@ -410,30 +357,30 @@ export default function CostSummary() {
                         </TableCell>
                       </TableRow>)}
 
-                    {/* Receipts Section */}
-                    <TableRow className="bg-muted/50 hover:bg-muted/60">
-                      <TableCell className="sticky left-0 z-10 bg-muted/50 hover:bg-muted/60">
-                        <Collapsible open={expandedGroups["Receipts"]} onOpenChange={() => toggleGroup("Receipts")}>
-                          <CollapsibleTrigger className="flex items-center gap-2 font-semibold text-foreground text-sm">
-                            {expandedGroups["Receipts"] ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                            Receipts
+                    {/* OUTFLOW Section */}
+                    <TableRow className="border-b">
+                      <TableCell className="sticky left-0 z-10 bg-background">
+                        <Collapsible open={expandedGroups["Outflow"]} onOpenChange={() => toggleGroup("Outflow")}>
+                          <CollapsibleTrigger className="flex items-center gap-2 font-semibold text-foreground text-sm py-2">
+                            {expandedGroups["Outflow"] ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                            OUTFLOW
                           </CollapsibleTrigger>
                         </Collapsible>
                       </TableCell>
-                      {fyMonths.map((month, idx) => <TableCell key={idx} className="text-center py-1 text-xs font-medium">
-                          ₹{getReceiptsTotal(month).toLocaleString('en-IN', {
+                      {fyMonths.map((month, idx) => <TableCell key={idx} className="text-center py-2 text-xs font-medium">
+                          ₹{getOutflowTotal(month).toLocaleString('en-IN', {
                     maximumFractionDigits: 0
                   })}
                         </TableCell>)}
-                      <TableCell className="text-center py-1 text-xs font-bold">
-                        ₹{totalYearReceipts.toLocaleString('en-IN', {
+                      <TableCell className="text-center py-2 text-xs font-semibold">
+                        ₹{totalYearOutflow.toLocaleString('en-IN', {
                     maximumFractionDigits: 0
                   })}
                       </TableCell>
                     </TableRow>
 
-                    {expandedGroups["Receipts"] && receiptsHeads.map(head => <TableRow key={head} className="hover:bg-muted/30">
-                        <TableCell className="sticky left-0 z-10 bg-background pl-8 text-xs text-muted-foreground">
+                    {expandedGroups["Outflow"] && outflowHeads.map(head => <TableRow key={head} className="hover:bg-muted/20 border-b border-border/50">
+                        <TableCell className="sticky left-0 z-10 bg-background pl-8 text-xs">
                           {head}
                         </TableCell>
                         {fyMonths.map((month, idx) => renderAmountCell(head, month, idx))}
@@ -444,197 +391,46 @@ export default function CostSummary() {
                         </TableCell>
                       </TableRow>)}
 
-                    {/* Total Inflow Row */}
-                    <TableRow className="bg-primary/10 font-bold">
-                      <TableCell className="sticky left-0 z-10 bg-primary/10 text-sm">Total Inflow</TableCell>
+                    {/* Net Cash Flow Row */}
+                    <TableRow className="font-semibold border-t-2 border-primary/30">
+                      <TableCell className="sticky left-0 z-10 bg-background text-sm py-3">NET CASH FLOW</TableCell>
                       {fyMonths.map((month, idx) => {
-                        const inflow = getRevenueTotal(month) + getReceiptsTotal(month);
-                        return <TableCell key={idx} className="text-center py-1 text-xs text-green-600">
-                          ₹{inflow.toLocaleString('en-IN', {
+                        const netFlow = getInflowTotal(month) - getOutflowTotal(month);
+                        return <TableCell key={idx} className={`text-center py-3 text-xs ${netFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          ₹{Math.abs(netFlow).toLocaleString('en-IN', {
                             maximumFractionDigits: 0
                           })}
                         </TableCell>;
                       })}
-                      <TableCell className="text-center py-1 text-xs font-bold text-green-600">
-                        ₹{totalYearInflow.toLocaleString('en-IN', {
+                      <TableCell className={`text-center py-3 text-xs font-semibold ${netCashFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        ₹{Math.abs(netCashFlow).toLocaleString('en-IN', {
                           maximumFractionDigits: 0
                         })}
                       </TableCell>
                     </TableRow>
 
-                    {/* OUTFLOW Header */}
-                    <TableRow className="bg-destructive/20">
-                      <TableCell colSpan={14} className="text-center py-2 text-sm font-bold text-foreground">
-                        OUTFLOW
-                      </TableCell>
-                    </TableRow>
-
-                    {/* Direct Expenses Section */}
-                    {(() => {
-                const groupName = "Direct Expenses";
-                const heads = cashFlowGroupedExpenses[groupName];
-                if (!heads || heads.length === 0) return null;
-                return <React.Fragment key={groupName}>
-                          <TableRow className="bg-muted/50 hover:bg-muted/60">
-                            <TableCell className="sticky left-0 z-10 bg-muted/50 hover:bg-muted/60">
-                              <Collapsible open={expandedGroups[groupName]} onOpenChange={() => toggleGroup(groupName)}>
-                                <CollapsibleTrigger className="flex items-center gap-2 font-semibold text-foreground text-sm">
-                                  {expandedGroups[groupName] ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                                  {groupName}
-                                </CollapsibleTrigger>
-                              </Collapsible>
-                            </TableCell>
-                            {fyMonths.map((month, idx) => <TableCell key={idx} className="text-center py-1 text-xs font-medium">
-                                ₹{Math.abs(getGroupTotal(groupName, month)).toLocaleString('en-IN', {
-                        maximumFractionDigits: 0
-                      })}
-                              </TableCell>)}
-                            <TableCell className="text-center py-1 text-xs font-bold">
-                              ₹{Math.abs(fyMonths.reduce((sum, m) => sum + getGroupTotal(groupName, m), 0)).toLocaleString('en-IN', {
-                        maximumFractionDigits: 0
-                      })}
-                            </TableCell>
-                          </TableRow>
-
-                          {expandedGroups[groupName] && heads.map(head => <TableRow key={head} className="hover:bg-muted/30">
-                              <TableCell className="sticky left-0 z-10 bg-background pl-8 text-xs text-muted-foreground">
-                                {head}
-                              </TableCell>
-                              {fyMonths.map((month, idx) => renderAmountCell(head, month, idx))}
-                              <TableCell className="text-center py-1 text-xs">
-                                ₹{Math.abs(fyMonths.reduce((sum, m) => sum + getAmountForMonth(head, m), 0)).toLocaleString('en-IN', {
-                        maximumFractionDigits: 0
-                      })}
-                              </TableCell>
-                            </TableRow>)}
-                        </React.Fragment>;
-              })()}
-
-                    {/* Operating Cost Section */}
-                    {(() => {
-                const groupName = "Operating Cost";
-                const heads = cashFlowGroupedExpenses[groupName];
-                if (!heads || heads.length === 0) return null;
-                return <React.Fragment key={groupName}>
-                          <TableRow className="bg-muted/50 hover:bg-muted/60">
-                            <TableCell className="sticky left-0 z-10 bg-muted/50 hover:bg-muted/60">
-                              <Collapsible open={expandedGroups[groupName]} onOpenChange={() => toggleGroup(groupName)}>
-                                <CollapsibleTrigger className="flex items-center gap-2 font-semibold text-foreground text-sm">
-                                  {expandedGroups[groupName] ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                                  {groupName}
-                                </CollapsibleTrigger>
-                              </Collapsible>
-                            </TableCell>
-                            {fyMonths.map((month, idx) => <TableCell key={idx} className="text-center py-1 text-xs font-medium">
-                                ₹{Math.abs(getGroupTotal(groupName, month)).toLocaleString('en-IN', {
-                        maximumFractionDigits: 0
-                      })}
-                              </TableCell>)}
-                            <TableCell className="text-center py-1 text-xs font-bold">
-                              ₹{Math.abs(fyMonths.reduce((sum, m) => sum + getGroupTotal(groupName, m), 0)).toLocaleString('en-IN', {
-                        maximumFractionDigits: 0
-                      })}
-                            </TableCell>
-                          </TableRow>
-
-                          {expandedGroups[groupName] && heads.map(head => <TableRow key={head} className="hover:bg-muted/30">
-                              <TableCell className="sticky left-0 z-10 bg-background pl-8 text-xs text-muted-foreground">
-                                {head}
-                              </TableCell>
-                              {fyMonths.map((month, idx) => renderAmountCell(head, month, idx))}
-                              <TableCell className="text-center py-1 text-xs">
-                                ₹{Math.abs(fyMonths.reduce((sum, m) => sum + getAmountForMonth(head, m), 0)).toLocaleString('en-IN', {
-                        maximumFractionDigits: 0
-                      })}
-                              </TableCell>
-                            </TableRow>)}
-                        </React.Fragment>;
-              })()}
-
-                    {/* Total Outflow Row */}
-                    {cashFlowGroupedExpenses["Operating Cost"] && <TableRow className="bg-primary/10 font-bold">
-                        <TableCell className="sticky left-0 z-10 bg-primary/10 text-sm">Total Outflow</TableCell>
-                        {fyMonths.map((month, idx) => {
-                  const outflow = Math.abs(getGroupTotal("Direct Expenses", month)) + Math.abs(getGroupTotal("Operating Cost", month));
-                  return <TableCell key={idx} className="text-center py-1 text-xs text-red-600">
-                              ₹{outflow.toLocaleString('en-IN', {
-                      maximumFractionDigits: 0
-                    })}
-                            </TableCell>;
-                })}
-                        <TableCell className="text-center py-1 text-xs font-bold text-red-600">
-                          ₹{totalYearOutflow.toLocaleString('en-IN', {
-                    maximumFractionDigits: 0
-                  })}
-                        </TableCell>
-                      </TableRow>}
-
-                    {/* Net Cash Flow Row */}
-                    {cashFlowGroupedExpenses["Operating Cost"] && <TableRow className="bg-accent/20 font-bold border-t-2 border-accent">
-                        <TableCell className="sticky left-0 z-10 bg-accent/20 text-sm">NET CASH FLOW</TableCell>
-                        {fyMonths.map((month, idx) => {
-                  const inflow = getRevenueTotal(month) + getReceiptsTotal(month);
-                  const outflow = Math.abs(getGroupTotal("Direct Expenses", month)) + Math.abs(getGroupTotal("Operating Cost", month));
-                  const netFlow = inflow - outflow;
-                  return <TableCell key={idx} className={`text-center py-1 text-xs ${netFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              ₹{Math.abs(netFlow).toLocaleString('en-IN', {
-                      maximumFractionDigits: 0
-                    })}
-                            </TableCell>;
-                })}
-                        <TableCell className={`text-center py-1 text-xs font-bold ${netCashFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          ₹{Math.abs(netCashFlow).toLocaleString('en-IN', {
-                    maximumFractionDigits: 0
-                  })}
-                        </TableCell>
-                      </TableRow>}
-
-                    {/* Other Categories - Non Cash Flow Items */}
-                    {Object.keys(otherGroupedExpenses).length > 0 && <>
-                        <TableRow className="bg-muted/30">
+                    {/* Unclassified items */}
+                    {unmappedExpenses.length > 0 && <>
+                        <TableRow className="border-t">
                           <TableCell colSpan={14} className="text-center py-2 text-xs text-muted-foreground italic">
-                            ─── Other Categories (Not included in Cash Flow) ───
+                            Unclassified Expenses
                           </TableCell>
                         </TableRow>
-
-                        {Object.entries(otherGroupedExpenses).map(([groupName, heads]) => <React.Fragment key={groupName}>
-                            <TableRow className="bg-muted/30 hover:bg-muted/40">
-                              <TableCell className="sticky left-0 z-10 bg-muted/30 hover:bg-muted/40">
-                                <Collapsible open={expandedGroups[groupName] ?? false} onOpenChange={() => toggleGroup(groupName)}>
-                                  <CollapsibleTrigger className="flex items-center gap-2 font-medium text-muted-foreground text-sm">
-                                    {expandedGroups[groupName] ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                                    {groupName}
-                                  </CollapsibleTrigger>
-                                </Collapsible>
-                              </TableCell>
-                              {fyMonths.map((month, idx) => <TableCell key={idx} className="text-center py-1 text-xs text-muted-foreground">
-                                  ₹{Math.abs(getGroupTotal(groupName, month)).toLocaleString('en-IN', {
-                        maximumFractionDigits: 0
-                      })}
-                                </TableCell>)}
-                              <TableCell className="text-center py-1 text-xs text-muted-foreground">
-                                ₹{Math.abs(fyMonths.reduce((sum, m) => sum + getGroupTotal(groupName, m), 0)).toLocaleString('en-IN', {
-                        maximumFractionDigits: 0
-                      })}
-                              </TableCell>
-                            </TableRow>
-
-                            {expandedGroups[groupName] && heads.map(head => <TableRow key={head} className="hover:bg-muted/20">
-                                <TableCell className="sticky left-0 z-10 bg-background pl-8 text-xs text-muted-foreground/70">
-                                  {head}
-                                </TableCell>
-                                {fyMonths.map((month, idx) => <TableCell key={idx} className="text-center py-1 text-xs text-muted-foreground/70">
-                                    {getAmountForMonth(head, month) !== 0 ? `₹${Number(Math.abs(getAmountForMonth(head, month))).toLocaleString('en-IN', {
+                        {unmappedExpenses.map(head => <TableRow key={head} className="hover:bg-muted/20 border-b border-border/50">
+                            <TableCell className="sticky left-0 z-10 bg-background pl-8 text-xs text-muted-foreground">
+                              {head}
+                            </TableCell>
+                            {fyMonths.map((month, idx) => <TableCell key={idx} className="text-center py-1 text-xs text-muted-foreground">
+                                {getAmountForMonth(head, month) !== 0 ? `₹${Number(Math.abs(getAmountForMonth(head, month))).toLocaleString('en-IN', {
                         maximumFractionDigits: 0
                       })}` : "-"}
-                                  </TableCell>)}
-                                <TableCell className="text-center py-1 text-xs text-muted-foreground/70">
-                                  ₹{Math.abs(fyMonths.reduce((sum, m) => sum + getAmountForMonth(head, m), 0)).toLocaleString('en-IN', {
+                              </TableCell>)}
+                            <TableCell className="text-center py-1 text-xs text-muted-foreground">
+                              ₹{Math.abs(fyMonths.reduce((sum, m) => sum + getAmountForMonth(head, m), 0)).toLocaleString('en-IN', {
                         maximumFractionDigits: 0
                       })}
-                                </TableCell>
-                              </TableRow>)}
-                          </React.Fragment>)}
+                            </TableCell>
+                          </TableRow>)}
                       </>}
                   </TableBody>
                 </Table>
