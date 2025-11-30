@@ -16,12 +16,25 @@ import { cn } from "@/lib/utils";
 
 type TransactionType = "production" | "sale" | "sample";
 
+interface Transaction {
+  id: string;
+  toy_id: string;
+  transaction_type: string;
+  quantity: number;
+  stock_after: number;
+  price: number | null;
+  customer_name: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
 interface StockTransactionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   toys: Array<{ id: string; name: string; current_stock: number }>;
   selectedToyId?: string;
   initialType?: TransactionType;
+  transaction?: Transaction;
   onSuccess: () => void;
 }
 
@@ -31,8 +44,10 @@ export function StockTransactionDialog({
   toys, 
   selectedToyId,
   initialType = "production",
+  transaction,
   onSuccess 
 }: StockTransactionDialogProps) {
+  const isEditing = !!transaction;
   const [transactionType, setTransactionType] = useState<TransactionType>(initialType);
   const [toyId, setToyId] = useState(selectedToyId || "");
   const [quantity, setQuantity] = useState("");
@@ -55,7 +70,23 @@ export function StockTransactionDialog({
     }
   }, [selectedToyId]);
 
+  useEffect(() => {
+    if (transaction) {
+      setToyId(transaction.toy_id);
+      setTransactionType(transaction.transaction_type as TransactionType);
+      setQuantity(Math.abs(transaction.quantity).toString());
+      setDate(new Date(transaction.created_at));
+      setCustomerName(transaction.customer_name || "");
+      setPrice(transaction.price?.toString() || "");
+      setNotes(transaction.notes || "");
+    } else {
+      resetForm();
+    }
+  }, [transaction]);
+
   const getDialogTitle = () => {
+    if (isEditing) return "Edit Transaction";
+    
     switch (transactionType) {
       case "production":
         return "Add Finished Stock";
@@ -107,46 +138,70 @@ export function StockTransactionDialog({
     setIsSubmitting(true);
     
     try {
-      // Fetch the latest stock value to ensure accurate calculation
-      const { data: latestToy, error: fetchError } = await supabase
-        .from("toys")
-        .select("current_stock")
-        .eq("id", toyId)
-        .single();
+      if (isEditing && transaction) {
+        // Update existing transaction
+        const isDeduction = transactionType === "sale" || transactionType === "sample";
+        const actualQuantity = isDeduction ? -qty : qty;
 
-      if (fetchError) throw fetchError;
+        const { error: updateError } = await supabase
+          .from("stock_transactions")
+          .update({
+            transaction_type: transactionType,
+            quantity: actualQuantity,
+            customer_name: requiresCustomer ? customerName : null,
+            price: price ? parseFloat(price) : null,
+            notes: notes || null,
+            created_at: date.toISOString(),
+          })
+          .eq("id", transaction.id);
 
-      const currentStock = latestToy?.current_stock || 0;
-      const isDeduction = transactionType === "sale" || transactionType === "sample";
-      const actualQuantity = isDeduction ? -qty : qty;
-      const stockAfter = currentStock + actualQuantity;
+        if (updateError) throw updateError;
 
-      // Insert transaction - the database trigger will automatically update toy stock
-      const { error: transactionError } = await supabase
-        .from("stock_transactions")
-        .insert({
-          toy_id: toyId,
-          transaction_type: transactionType,
-          quantity: actualQuantity,
-          stock_after: stockAfter,
-          customer_name: requiresCustomer ? customerName : null,
-          price: price ? parseFloat(price) : null,
-          notes: notes || null,
-          created_at: date.toISOString(),
+        toast({
+          title: "Transaction updated",
+          description: `Successfully updated transaction for ${selectedToy.name}`,
         });
+      } else {
+        // Insert new transaction
+        const { data: latestToy, error: fetchError } = await supabase
+          .from("toys")
+          .select("current_stock")
+          .eq("id", toyId)
+          .single();
 
-      if (transactionError) throw transactionError;
+        if (fetchError) throw fetchError;
 
-      const actionText = {
-        production: "added",
-        sale: "sold",
-        sample: "marked as sample"
-      }[transactionType];
+        const currentStock = latestToy?.current_stock || 0;
+        const isDeduction = transactionType === "sale" || transactionType === "sample";
+        const actualQuantity = isDeduction ? -qty : qty;
+        const stockAfter = currentStock + actualQuantity;
 
-      toast({
-        title: "Transaction recorded",
-        description: `Successfully ${actionText} ${qty} units of ${selectedToy.name}`,
-      });
+        const { error: transactionError } = await supabase
+          .from("stock_transactions")
+          .insert({
+            toy_id: toyId,
+            transaction_type: transactionType,
+            quantity: actualQuantity,
+            stock_after: stockAfter,
+            customer_name: requiresCustomer ? customerName : null,
+            price: price ? parseFloat(price) : null,
+            notes: notes || null,
+            created_at: date.toISOString(),
+          });
+
+        if (transactionError) throw transactionError;
+
+        const actionText = {
+          production: "added",
+          sale: "sold",
+          sample: "marked as sample"
+        }[transactionType];
+
+        toast({
+          title: "Transaction recorded",
+          description: `Successfully ${actionText} ${qty} units of ${selectedToy.name}`,
+        });
+      }
 
       onSuccess();
       onOpenChange(false);
@@ -298,7 +353,7 @@ export function StockTransactionDialog({
             Cancel
           </Button>
           <Button type="submit" disabled={isSubmitting} onClick={handleSubmit}>
-            {isSubmitting ? "Recording..." : "Record Transaction"}
+            {isSubmitting ? (isEditing ? "Updating..." : "Recording...") : (isEditing ? "Update Transaction" : "Record Transaction")}
           </Button>
         </DialogFooter>
       </DialogContent>

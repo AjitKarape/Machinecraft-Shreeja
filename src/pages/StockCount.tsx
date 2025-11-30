@@ -31,6 +31,7 @@ export default function StockCount() {
   const [selectedToyId, setSelectedToyId] = useState<string | undefined>();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [transactionType, setTransactionType] = useState<TransactionType>("production");
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>();
   const fetchTransactions = async () => {
     const {
       data,
@@ -59,7 +60,8 @@ export default function StockCount() {
   }, []);
   const handleOpenDialog = (toyId?: string) => {
     setSelectedToyId(toyId);
-    setTransactionType("production"); // Default to production
+    setTransactionType("production");
+    setEditingTransaction(undefined);
     setDialogOpen(true);
   };
   const handleSuccess = () => {
@@ -67,7 +69,7 @@ export default function StockCount() {
     refetchToys(); // Refresh toy stock values
   };
   const handleTransactionEdit = (transaction: Transaction) => {
-    // Open dialog with transaction data
+    setEditingTransaction(transaction);
     setSelectedToyId(transaction.toy_id);
     setTransactionType(transaction.transaction_type as TransactionType);
     setDialogOpen(true);
@@ -121,7 +123,7 @@ export default function StockCount() {
       </div>
 
       {/* Dialogs */}
-      <StockTransactionDialog open={dialogOpen} onOpenChange={setDialogOpen} toys={toys} selectedToyId={selectedToyId} initialType={transactionType} onSuccess={handleSuccess} />
+      <StockTransactionDialog open={dialogOpen} onOpenChange={setDialogOpen} toys={toys} selectedToyId={selectedToyId} initialType={transactionType} transaction={editingTransaction} onSuccess={handleSuccess} />
     </div>
     </div>;
 }
